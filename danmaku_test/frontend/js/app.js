@@ -4,6 +4,7 @@ new Vue({
         bvInput: '',
         videoInfo: null,
         danmakuData: [],
+        displayDanmaku: [], // 用于显示的弹幕（查询或全部）
         wordFrequency: [],
         wordCloudImage: '', // 存储词云图 Base64
         danmakuTimelineImage: '', // 存储折线图 Base64
@@ -12,6 +13,7 @@ new Vue({
         totalPages: 1,
         isLoading: false,
         activeTab: 'video-info',
+        searchKeyword: '', // 新增：搜索关键字
         tabs: [
             { id: 'video-info', name: '视频信息' },
             { id: 'danmaku', name: '弹幕列表' },
@@ -59,8 +61,10 @@ new Vue({
                     alert(data.error);
                 } else {
                     Vue.set(this, 'danmakuData', data.danmaku);
+                    Vue.set(this, 'displayDanmaku', data.danmaku); // 初始化显示数据
                     this.totalPages = data.total_pages || 1;
                     this.currentPage = data.current_page;
+                    this.searchKeyword = ''; // 重置搜索关键字
                 }
             })
             .catch(error => {
@@ -128,6 +132,30 @@ new Vue({
             } finally {
                 this.isLoading = false;
             }
+        },
+        // 新增：搜索弹幕
+        searchDanmaku() {
+            if (!this.danmakuData.length) {
+                alert('请先查询弹幕数据');
+                return;
+            }
+            this.isLoading = true;
+            console.log("Searching danmaku with keyword:", this.searchKeyword);
+            
+            if (this.searchKeyword.trim() === '') {
+                // 如果关键字为空，显示所有弹幕
+                this.displayDanmaku = [...this.danmakuData];
+            } else {
+                // 过滤包含关键字的弹幕
+                this.displayDanmaku = this.danmakuData.filter(d => 
+                    d.content && d.content.includes(this.searchKeyword)
+                );
+            }
+            
+            // 重置分页
+            this.currentPage = 1;
+            this.totalPages = Math.ceil(this.displayDanmaku.length / this.itemsPerPage);
+            this.isLoading = false;
         },
         changePage(page) {
             if (page < 1 || page > this.totalPages) {

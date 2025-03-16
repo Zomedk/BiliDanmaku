@@ -54,8 +54,15 @@
                             {{ isLoading ? '加载中...' : '查询弹幕' }}
                         </button>
                     </div>
-                    <div v-if="danmakuData.length > 0" class="danmaku-list">
-                        <h3>弹幕列表</h3>
+                    <!-- 新增：弹幕查询区域 -->
+                    <div class="input-group" v-if="danmakuData.length > 0">
+                        <input v-model="searchKeyword" placeholder="请输入关键字搜索弹幕" class="input-field">
+                        <button @click="searchDanmaku" class="btn-primary" :disabled="isLoading">
+                            {{ isLoading ? '搜索中...' : '搜索' }}
+                        </button>
+                    </div>
+                    <div v-if="displayDanmaku.length > 0" class="danmaku-list">
+                        <h3>{{ searchKeyword ? '搜索结果' : '弹幕列表' }}</h3>
                         <table class="danmaku-table">
                             <thead><tr><th>发送时间</th><th>发送者哈希值</th><th>内容</th></tr></thead>
                             <tbody>
@@ -70,6 +77,7 @@
                             <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages || isLoading">下一页</button>
                         </div>
                     </div>
+                    <div v-else-if="danmakuData.length > 0 && searchKeyword"><p>没有找到包含“{{ searchKeyword }}”的弹幕。</p></div>
                     <div v-else><p>暂无弹幕数据，点击“查询弹幕”按钮获取。</p></div>
                 </div>
 
