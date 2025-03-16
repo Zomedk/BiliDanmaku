@@ -1,0 +1,185 @@
+/* 设置页面的整体样式 */
+body {
+    font-family: Arial, sans-serif; /* 设置字体为 Arial 字体，如果没有则使用 sans-serif */
+    padding: 20px; /* 设置页面内部的间距 */
+    background-color: #f9f9f9; /* 设置背景颜色为浅灰色，避免全白看起来太刺眼 */
+    margin: 0; /* 去除默认的外边距 */
+    display: flex; /* 使用 flexbox 布局 */
+    justify-content: center; /* 水平居中内容 */
+    align-items: center; /* 垂直居中内容 */
+    min-height: 100vh; /* 设置页面最小高度为视口的 100%，确保页面充满屏幕 */
+}
+
+/* 容器样式 */
+.container {
+    width: 100%; /* 容器宽度为100% */
+    max-width: 900px; /* 最大宽度设置为900px，避免过宽 */
+    background-color: #ffffff; /* 容器背景色为白色 */
+    padding: 30px; /* 容器内边距 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 为容器添加阴影效果，使其更加立体 */
+    border-radius: 8px; /* 容器四角圆角 */
+    overflow: hidden; /* 防止内容溢出容器 */
+    margin-top: -100px; /* 向上调整容器位置，负值会把容器上移 */
+}
+
+/* 标题样式 */
+h1 {
+    font-size: 24px; /* 设置标题的字体大小 */
+    font-weight: bold; /* 设置标题字体为粗体 */
+    text-align: center; /* 标题居中 */
+    margin-bottom: 20px; /* 标题下方的间距 */
+    color: #333; /* 设置标题颜色为深灰色，使其不那么刺眼 */
+}
+
+/* 输入框和按钮的容器样式 */
+.input-group {
+    display: flex; /* 使用 flexbox 布局 */
+    justify-content: center; /* 水平居中排列元素 */
+    gap: 10px; /* 设置输入框和按钮之间的间距 */
+}
+
+/* 输入框样式 */
+.input-field {
+    padding: 10px; /* 输入框内边距 */
+    font-size: 16px; /* 输入框文字大小 */
+    border: 1px solid #cccccc; /* 输入框边框颜色为蓝色 */
+    border-radius: 4px; /* 输入框四角圆角 */
+    width: 60%; /* 输入框占容器宽度的60% */
+    max-width: 400px; /* 输入框最大宽度为400px */
+}
+
+/* 查询按钮样式 */
+.btn-primary {
+    background-color: #007bff; /* 设置按钮的背景颜色为蓝色 */
+    color: white; /* 按钮文字颜色为白色 */
+    border: none; /* 按钮没有边框 */
+    padding: 10px 20px; /* 按钮的内边距 */
+    font-size: 16px; /* 按钮文字大小 */
+    cursor: pointer; /* 鼠标悬停时显示为手型 */
+    border-radius: 4px; /* 按钮四角圆角 */
+    transition: background-color 0.3s; /* 按钮背景颜色的过渡效果 */
+}
+
+/* 查询按钮悬停时的样式 */
+.btn-primary:hover {
+    background-color: #0056b3; /* 悬停时按钮背景颜色变为深蓝色 */
+}
+
+/* 视频信息部分样式 */
+#video-info {
+    margin-top: 20px; /* 视频信息部分与输入框之间的间距 */
+}
+
+/* 每一项视频信息的样式 */
+.info-item {
+    margin-bottom: 10px; /* 每项信息之间的间距 */
+}
+
+/* 强调文字（如标题）加粗 */
+strong {
+    font-weight: bold; /* 设置文字为加粗 */
+}
+
+/* 链接的样式 */
+a {
+    color: #007bff; /* 链接颜色为蓝色 */
+    text-decoration: none; /* 去掉链接下划线 */
+}
+
+/* 链接悬停时的样式 */
+a:hover {
+    text-decoration: underline; /* 悬停时增加下划线 */
+}
+
+/* 视频封面容器样式 */
+.cover-container {
+    margin-top: 10px; /* 封面与其他信息之间的间距 */
+    text-align: center; /* 使封面居中 */
+}
+
+/* 视频封面图片样式 */
+.cover-image {
+    max-width: 800px; /* 限制封面图片的最大宽度 */
+    border-radius: 4px; /* 给图片添加圆角效果 */
+}
+
+/* 弹幕列表样式 */
+.danmaku-list {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-radius: 5px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* 弹幕列表中的ul样式 */
+.danmaku-list ul {
+    list-style-type: none; /* 去掉列表项的默认样式 */
+    padding: 0; /* 去掉内边距 */
+}
+
+/* 弹幕列表项样式 */
+.danmaku-list li {
+    margin-bottom: 5px; /* 每条弹幕之间的间距 */
+}
+
+/* 表格样式 */
+.danmaku-table {
+    width: 100%; /* 设置表格宽度为100% */
+    border-collapse: collapse; /* 合并表格单元格边框 */
+    margin-top: 20px; /* 表格和其他元素之间的间距 */
+}
+
+/* 表格头部样式 */
+.danmaku-table th {
+    background-color: #007bff; /* 设置表格头部背景颜色 */
+    color: white; /* 表格头部文字颜色为白色 */
+    padding: 12px; /* 表格头部单元格内边距 */
+    text-align: left; /* 表格头部文字左对齐 */
+    font-size: 16px; /* 表格头部文字大小 */
+}
+
+/* 表格主体单元格样式 */
+.danmaku-table td {
+    padding: 10px; /* 表格单元格内边距 */
+    border: 1px solid #cccccc; /* 设置表格单元格边框颜色 */
+    font-size: 14px; /* 表格文字大小 */
+    text-align: left; /* 单元格内文字左对齐 */
+}
+
+/* 表格行悬停效果 */
+.danmaku-table tr:hover {
+    background-color: #f1f1f1; /* 悬停时行的背景颜色 */
+}
+
+/* 分页按钮样式 */
+.pagination {
+    display: flex; /* 使用 flexbox 布局 */
+    justify-content: center; /* 水平居中分页按钮 */
+    gap: 15px; /* 按钮之间的间距 */
+    margin-top: 20px; /* 上方间距 */
+}
+
+/* 分页按钮样式 */
+.pagination button {
+    background-color: #007bff; /* 按钮背景色 */
+    color: white; /* 按钮文字颜色 */
+    padding: 10px 15px; /* 按钮内边距 */
+    border: none; /* 去掉按钮边框 */
+    border-radius: 4px; /* 按钮圆角 */
+    cursor: pointer; /* 鼠标悬停时显示为手型 */
+    font-size: 16px; /* 按钮文字大小 */
+    transition: background-color 0.3s; /* 按钮悬停时背景颜色的过渡效果 */
+}
+
+/* 分页按钮悬停时的样式 */
+.pagination button:hover {
+    background-color: #0056b3; /* 悬停时按钮背景颜色变为深蓝色 */
+}
+
+/* 分页按钮禁用时的样式 */
+.pagination button:disabled {
+    background-color: #cccccc; /* 禁用按钮背景颜色为浅灰色 */
+    cursor: not-allowed; /* 禁用按钮显示为不可点击状态 */
+}
