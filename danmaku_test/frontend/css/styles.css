@@ -235,6 +235,7 @@ a:hover {
     cursor: not-allowed;
 }
 
+
 /* 词云图样式 */
 .word-cloud-container {
     margin-top: 15px;
@@ -242,7 +243,8 @@ a:hover {
 }
 
 .word-cloud-image {
-    max-width: 100%;
+    max-width: 100%;  /* 自适应容器宽度 */
+    max-height: 600px;  /* 设置最大高度，避免过大 */
     border: 1px solid #cccccc;
     border-radius: 4px;
 }
@@ -254,3 +256,4 @@ a:hover {
     margin-top: 20px;
     font-size: 16px;
 }
+

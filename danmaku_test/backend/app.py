@@ -8,11 +8,11 @@ from modules.danmaku import fetch_danmaku  # 从danmaku模块导入获取弹幕�
 from modules.cover_image import download_cover_image  # 从cover_image模块导入下载封面图片的函数
 from modules.utils import handle_bv_input  # 从utils模块导入处理BV号的函数
 from modules.logger import app_logger  # 使用app_logger作为日志记录器
-from modules.danmaku_analysis import calculate_word_frequency
+from modules.danmaku_analysis import calculate_word_frequency, generate_word_cloud
 from wordcloud import WordCloud
 from io import BytesIO
 import base64
-
+from PIL import Image
 
 app = Flask(__name__)  # 创建Flask应用实例
 # 启用 CORS，允许所有来源访问
@@ -26,8 +26,8 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 }
 
-# 字体路径（需要替换为实际路径）
-FONT_PATH = 'C:/Windows/Fonts/simhei.ttf'  # 请确保路径正确
+# 字体路径
+FONT_PATH = 'C:/Windows/Fonts/simhei.ttf'  
 
 # API 路由：处理视频信息请求
 @app.route('/api/video', methods=['POST'])
@@ -168,32 +168,13 @@ def word_cloud():
         if not danmaku_data:
             raise ValueError("未获取到弹幕数据")
         
-        # 计算词频
-        top_words = calculate_word_frequency(danmaku_data, logger=app_logger)
-        word_freq = {word: freq for word, freq in top_words}
+        # 调用 danmaku_analysis 中的生成函数
+        word_cloud_image = generate_word_cloud(danmaku_data, logger=app_logger)
         
-        # 生成词云图
-        wc = WordCloud(
-            font_path=FONT_PATH,
-            width=600,
-            height=400,
-            background_color='#f5f5f5',
-            max_words=100,
-            colormap='viridis'
-        ).generate_from_frequencies(word_freq)
-        
-        # 将图片转为 Base64
-        img_io = BytesIO()
-        wc.to_file(img_io, format='png')
-        img_io.seek(0)
-        img_base64 = base64.b64encode(img_io.getvalue()).decode('utf-8')
-        
-        app_logger.debug("Word cloud image generated successfully")
-        return jsonify({'image': f'data:image/png;base64,{img_base64}'})
+        return jsonify({'image': word_cloud_image})
     except Exception as e:
         app_logger.error(f"Error in word cloud generation: {str(e)}")
         return jsonify({'error': f"词云图生成失败: {str(e)}"}), 400
-    
 
 
 # 启动Flask应用
