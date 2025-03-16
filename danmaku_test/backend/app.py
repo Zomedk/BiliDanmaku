@@ -113,6 +113,10 @@ def danmaku():
 def word_frequency():
     data = request.json
     bv_input = data.get('bv', '')  # 获取 BV 号
+    
+    # 记录请求日志
+    app_logger.debug(f"Received request for word frequency: BV={bv_input}")
+    
     try:
         # 获取视频的 CID
         bv = handle_bv_input(bv_input)
@@ -121,14 +125,24 @@ def word_frequency():
         # 获取弹幕数据
         danmaku_data = fetch_danmaku(cid)
         
+        # 检查弹幕数据类型
+        if isinstance(danmaku_data, dict):
+            danmaku_data = danmaku_data.get('danmaku_list', [])
+        if not danmaku_data:
+            raise ValueError("未获取到弹幕数据")
+        
         # 获取词频统计结果
         top_words = calculate_word_frequency(danmaku_data)
+        
+        # 记录成功日志
+        app_logger.debug(f"Word frequency calculated: {top_words[:5]}...")  # 只记录前5个词避免日志过长
         
         # 返回词频统计数据
         return jsonify({'top_words': top_words})
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        app_logger.error(f"Error in word frequency calculation: {str(e)}")
+        return jsonify({'error': f"词频统计失败: {str(e)}"}), 400
 
 # 启动Flask应用
 if __name__ == '__main__':

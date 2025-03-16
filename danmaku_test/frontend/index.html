@@ -1,80 +1,83 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <!-- 设置页面字符编码为UTF-8，确保中文显示正确 -->
     <meta charset="UTF-8">
-    
-    <!-- 设置视口，确保页面在移动设备上能够响应式显示 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- 页面标题，显示在浏览器标签页 -->
     <title>B站视频信息查询</title>
-    
-    <!-- 引入外部样式表文件，样式定义放在css/styles.css文件中 -->
     <link rel="stylesheet" href="css/styles.css">
-    
-    <!-- 引入Vue.js框架，通过Vue.js实现前端的交互和数据绑定 -->
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <!-- 引入 axios，确保 fetchWordFrequency 方法能正常工作 -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
-    <!-- Vue.js 应用的根容器，id="app" 用于Vue.js实例挂载 -->
     <div id="app">
-        <!-- 页面主体容器 -->
         <div class="container">
-            
-            <!-- 主标题，描述当前页面功能 -->
             <h1>查询 B 站视频信息</h1>
 
-            <!-- 用户输入框和查询按钮的容器 -->
             <div class="input-group">
-                <!-- 输入框：使用 v-model 双向绑定用户输入的BV号或视频链接 -->
                 <input v-model="bvInput" placeholder="请输入 BV 号 或 视频链接" class="input-field">
-                
-                <!-- 查询按钮：点击按钮时触发 fetchVideoInfo 方法，用于查询视频信息 -->
-                <button @click="fetchVideoInfo" class="btn-primary">查询</button>
+                <button @click="fetchVideoInfo" class="btn-primary" :disabled="isLoading">
+                    {{ isLoading ? '查询中...' : '查询' }}
+                </button>
             </div>
 
-            <!-- 视频信息区域：只有在 videoInfo 数据存在时才会显示 -->
             <div v-if="videoInfo" id="video-info" class="video-info">
-                <!-- 视频信息标题 -->
                 <h2>视频信息</h2>
-                
-                <!-- 显示视频标题 -->
                 <div class="info-item">
                     <strong>标题：</strong><span>{{ videoInfo.title }}</span>
                 </div>
-                
-                <!-- 显示UP主名称 -->
                 <div class="info-item">
                     <strong>UP主：</strong><span>{{ videoInfo.up_name }}</span>
                 </div>
-                
-                <!-- 显示UP主主页的链接 -->
                 <div class="info-item">
                     <strong>UP主主页：</strong><a :href="videoInfo.up_link" target="_blank">{{ videoInfo.up_link }}</a>
                 </div>
-                
-                <!-- 显示视频封面图片 -->
                 <div class="info-item">
                     <strong>封面：</strong>
-                    <!-- 封面图片容器 -->
                     <div class="cover-container">
-                        <!-- 显示封面图片，动态绑定 src 属性为 videoInfo.cover -->
                         <img :src="videoInfo.cover" alt="封面" class="cover-image">
                     </div>
                 </div>
-                <!-- 在页面上添加一个按钮，点击后触发词频统计 -->
-                
-                <!-- 查询弹幕按钮 -->
+
+                <!-- 查询词频统计按钮 -->
                 <div class="input-group">
-                    <button @click="fetchDanmaku" class="btn-primary">查询弹幕</button>
+                    <button @click="fetchWordFrequency" class="btn-primary" :disabled="isLoading">
+                        {{ isLoading ? '统计中...' : '获取词频统计' }}
+                    </button>
                 </div>
 
-                <!-- 弹幕数据展示部分 -->
+                <!-- 词频统计展示区域 -->
+                <div v-if="wordFrequency.length > 0" class="word-frequency">
+                    <h3>词频统计</h3>
+                    <table class="word-frequency-table">
+                        <thead>
+                            <tr>
+                                <th>词语</th>
+                                <th>出现次数</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(word, index) in wordFrequency" :key="index">
+                                <td>{{ word[0] }}</td>
+                                <td>{{ word[1] }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- 词频统计为空时的提示 -->
+                <div v-else-if="!isLoading && videoInfo">
+                    <p>暂无词频统计数据，点击“获取词频统计”按钮获取。</p>
+                </div>
+
+                <!-- 查询弹幕按钮 -->
+                <div class="input-group">
+                    <button @click="fetchDanmaku" class="btn-primary" :disabled="isLoading">
+                        {{ isLoading ? '加载中...' : '查询弹幕' }}
+                    </button>
+                </div>
+
                 <div v-if="danmakuData.length > 0" class="danmaku-list">
                     <h2>弹幕列表</h2>
-                    
-                    <!-- 显示当前页的弹幕数据 -->
                     <table class="danmaku-table">
                         <thead>
                             <tr>
@@ -84,7 +87,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- 使用 v-for 循环遍历 paginatedDanmaku 数据并动态渲染每一行 -->
                             <tr v-for="d in paginatedDanmaku" :key="d.time + '-' + d.hash + '-' + d.content + '-' + d.uid">
                                 <td>{{ d.time }}</td>
                                 <td>{{ d.hash }}</td>
@@ -93,27 +95,23 @@
                         </tbody>
                     </table>
 
-                    <!-- 分页按钮 -->
                     <div class="pagination">
-                        <!-- 上一页按钮，点击时调用 changePage 方法并禁用在第一页 -->
-                        <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1">上一页</button>
-                        <!-- 显示当前页数和总页数 -->
+                        <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1 || isLoading">上一页</button>
                         <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
-                        <!-- 下一页按钮，点击时调用 changePage 方法并禁用在最后一页 -->
-                        <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages">下一页</button>
+                        <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages || isLoading">下一页</button>
                     </div>
-
                 </div>
 
-                <!-- 如果没有弹幕数据，则显示提示信息 -->
                 <div v-else>
                     <p>暂无弹幕数据，点击“查询弹幕”按钮获取。</p>
                 </div>
             </div>
+
+            <!-- 加载状态提示 -->
+            <div v-if="isLoading" class="loading">数据加载中，请稍候...</div>
         </div>
     </div>
 
-    <!-- 引入外部JavaScript文件，通常包含Vue实例和其他逻辑 -->
     <script src="js/app.js"></script>
 </body>
 </html>
