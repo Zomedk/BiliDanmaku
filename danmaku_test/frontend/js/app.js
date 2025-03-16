@@ -8,6 +8,7 @@ new Vue({
         currentPage: 1,
         itemsPerPage: 50,
         totalPages: 1,
+        wordCloudData: [],
         isLoading: false,
         activeTab: 'video-info', // 默认选项卡
         tabs: [
@@ -87,6 +88,41 @@ new Vue({
             } finally {
                 this.isLoading = false;
             }
+        },
+        async fetchWordCloud() {
+            try {
+                this.isLoading = true;
+                console.log("Fetching word cloud for BV:", this.bvInput);
+                const response = await axios.post('http://127.0.0.1:5000/api/word_cloud', {
+                    bv: this.bvInput
+                });
+                if (response.data.word_cloud) {
+                    this.wordCloudData = response.data.word_cloud;
+                    this.$nextTick(() => { // 确保 DOM 更新后再渲染
+                        this.renderWordCloud();
+                    });
+                } else {
+                    alert('词云数据为空');
+                }
+            } catch (error) {
+                console.error('获取词云失败:', error.response ? error.response.data : error);
+                alert(`获取词云失败: ${error.response ? error.response.data.error : error.message}`);
+            } finally {
+                this.isLoading = false;
+            }
+        },
+        renderWordCloud() {
+            const options = {
+                list: this.wordCloudData,
+                gridSize: 10,
+                weightFactor: 2,
+                fontFamily: 'Arial, sans-serif',
+                color: 'random-dark',
+                backgroundColor: '#f5f5f5',
+                rotateRatio: 0.5,
+                rotationSteps: 2
+            };
+            WordCloud(document.getElementById('word-cloud'), options);
         },
         changePage(page) {
             if (page < 1 || page > this.totalPages) {

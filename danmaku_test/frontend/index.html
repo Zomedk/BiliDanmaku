@@ -97,7 +97,16 @@
                 <!-- 占位：未来功能 -->
                 <div v-show="activeTab === 'advanced-analysis'" class="tab-pane">
                     <h3>高级分析</h3>
-                    <p>敬请期待：关键词搜索、时间分布图、词云图、情感分析、IP属地分布图等功能。</p>
+                    <div class="input-group">
+                        <button @click="fetchWordCloud" class="btn-primary" :disabled="isLoading">
+                            {{ isLoading ? '生成中...' : '生成词云图' }}
+                        </button>
+                    </div>
+                    <div v-if="wordCloudData.length > 0" class="word-cloud-container">
+                        <canvas id="word-cloud" width="600" height="400"></canvas>
+                    </div>
+                    <div v-else><p>暂无词云数据，请点击“生成词云图”。</p></div>
+                    <p>更多功能（关键词搜索、时间分布图等）敬请期待。</p>
                 </div>
             </div>
 

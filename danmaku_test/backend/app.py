@@ -144,6 +144,33 @@ def word_frequency():
         app_logger.error(f"Error in word frequency calculation: {str(e)}")
         return jsonify({'error': f"词频统计失败: {str(e)}"}), 400
 
+
+
+# 新增词云图 API
+@app.route('/api/word_cloud', methods=['POST'])
+def word_cloud():
+    data = request.json
+    bv_input = data.get('bv', '')
+    app_logger.debug(f"Received request for word cloud: BV={bv_input}")
+    try:
+        bv = handle_bv_input(bv_input)
+        cid = get_video_cid(bv)
+        danmaku_data = fetch_danmaku(cid)
+        if isinstance(danmaku_data, dict):
+            danmaku_data = danmaku_data.get('danmaku_list', [])
+        if not danmaku_data:
+            raise ValueError("未获取到弹幕数据")
+        # 计算词频并格式化为词云数据
+        top_words = calculate_word_frequency(danmaku_data, logger=app_logger)
+        word_cloud_data = [[word, freq * 10] for word, freq in top_words]  # 放大频率以增强视觉效果
+        app_logger.debug(f"Word cloud data prepared: {word_cloud_data[:5]}...")
+        return jsonify({'word_cloud': word_cloud_data})
+    except Exception as e:
+        app_logger.error(f"Error in word cloud generation: {str(e)}")
+        return jsonify({'error': f"词云图生成失败: {str(e)}"}), 400
+    
+
+
 # 启动Flask应用
 if __name__ == '__main__':
     app.run(debug=True)  # 在调试模式下启动Flask应用
