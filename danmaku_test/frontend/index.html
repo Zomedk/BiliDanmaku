@@ -106,9 +106,20 @@
                         <img :src="wordCloudImage" alt="词云图" class="word-cloud-image">
                     </div>
                     <div v-else><p>暂无词云数据，请点击“生成词云图”。</p></div>
+                    <!-- 弹幕时间分布图 -->
+                    <div class="input-group">
+                        <button @click="fetchDanmakuTimeline" class="btn-primary" :disabled="isLoading">
+                            {{ isLoading ? '生成中...' : '生成时间分布图' }}
+                        </button>
+                    </div>
+                    <div v-if="danmakuTimelineImage" class="timeline-container">
+                        <img :src="danmakuTimelineImage" alt="弹幕时间分布图" class="timeline-image">
+                    </div>
+                    <div v-else><p>暂无时间分布图，请点击“生成时间分布图”。</p></div>                    
                     <p>更多功能（关键词搜索、时间分布图等）敬请期待。</p>
                 </div>
             </div>
+            
 
             <!-- 加载状态 -->
             <div v-if="isLoading" class="loading">数据加载中，请稍候...</div>

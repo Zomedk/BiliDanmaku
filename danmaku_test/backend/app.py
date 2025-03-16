@@ -6,7 +6,7 @@ from modules.danmaku import fetch_danmaku  # 获取弹幕数据
 from modules.cover_image import download_cover_image  # 下载封面图片
 from modules.utils import handle_bv_input  # 处理 BV 号输入
 from modules.logger import app_logger  # 日志工具
-from modules.danmaku_analysis import calculate_word_frequency, generate_word_cloud  # 词频和词云生成
+from modules.danmaku_analysis import calculate_word_frequency, generate_word_cloud, generate_danmaku_timeline
 
 # 创建 Flask 应用
 app = Flask(__name__)
@@ -116,6 +116,29 @@ def word_cloud():
         app_logger.error(f"Error in word cloud generation: {str(e)}")
         return jsonify({'error': f"词云图生成失败: {str(e)}"}), 400
 
+# API：生成弹幕时间分布图
+@app.route('/api/danmaku_timeline', methods=['POST'])
+def danmaku_timeline():
+    data = request.json
+    bv_input = data.get('bv', '')
+    app_logger.debug(f"Received request for danmaku timeline: BV={bv_input}")
+    try:
+        bv = handle_bv_input(bv_input)
+        cid = get_video_cid(bv)
+        danmaku_data = fetch_danmaku(cid)
+        if isinstance(danmaku_data, dict):
+            danmaku_data = danmaku_data.get('danmaku_list', [])
+        if not danmaku_data:
+            raise ValueError("未获取到弹幕数据")
+        
+        timeline_image = generate_danmaku_timeline(danmaku_data, logger=app_logger)
+        
+        return jsonify({'image': timeline_image})
+    except Exception as e:
+        app_logger.error(f"Error in danmaku timeline generation: {str(e)}")
+        return jsonify({'error': f"时间分布图生成失败: {str(e)}"}), 400
+    
+    
 # 启动 Flask 应用
 if __name__ == '__main__':
     app.run(debug=True)  # 调试模式运行，方便开发时查看错误

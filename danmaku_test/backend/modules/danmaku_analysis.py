@@ -6,11 +6,15 @@ from wordcloud import WordCloud, ImageColorGenerator  # 生成词云图和动态
 from io import BytesIO  # 处理内存中的图片数据
 import base64  # 将图片转为 Base64 编码
 from PIL import Image  # 处理图片
-import numpy as np  # 处理蒙版图片的数组数据
+from modules.utils import parse_time_to_seconds
+import numpy as np
+import matplotlib.pyplot as plt  # 新增：绘制折线图
+from matplotlib.font_manager import FontProperties  # 新增：支持中文
+
 
 # 定义文件路径常量
 STOPWORDS_PATH = r'D:\Lernen\danmaku_test\danmaku_test\backend\stopwords_cn.txt'  # 停用词文件路径（过滤无意义的词）
-FONT_PATH = r'D:\Lernen\danmaku_test\backend\fonts\simhei.ttf'  # 字体文件路径（支持中文显示）
+FONT_PATH = r'C:\Windows\Fonts\simhei.ttf'  # 字体文件路径（支持中文显示）
 MASK_PATH = r'D:\Lernen\danmaku_test\backend\assets\circle_mask.png'  # 蒙版图片路径（定义词云形状）
 
 # 函数：加载停用词
@@ -136,3 +140,75 @@ def generate_word_cloud(danmaku_data, logger=None):
         logger.debug("Word cloud image generated successfully")  # 记录成功信息
     
     return f'data:image/png;base64,{img_base64}'  # 返回图片数据
+
+
+# 生成弹幕随时间分布折线图
+def generate_danmaku_timeline(danmaku_data, logger=None):
+    """
+    根据弹幕时间生成折线图，并标注关键时刻
+    :param danmaku_data: 弹幕数据列表，包含 'time' 键（可能是字符串或浮点数）
+    :param logger: 日志工具（可选）
+    :return: Base64 编码的折线图图片
+    """
+    if not danmaku_data or not isinstance(danmaku_data, (list, tuple)):
+        if logger:
+            logger.debug("Danmaku data is empty or invalid for timeline")
+        raise ValueError("未获取到弹幕数据")
+
+    # 提取弹幕时间并转换为秒数
+    times = []
+    for item in danmaku_data:
+        time_value = item.get('time', 0)
+        if isinstance(time_value, str):  # 如果是字符串格式
+            time_in_seconds = parse_time_to_seconds(time_value)
+        else:  # 如果已经是数字
+            time_in_seconds = float(time_value or 0)
+        times.append(time_in_seconds)
+
+    if not times:
+        raise ValueError("弹幕数据中没有有效的时间信息")
+
+    # 将时间按分钟分组
+    max_time = max(times)  # 视频总时长（秒）
+    bins = int(max_time // 60) + 1  # 按分钟划分，总分钟数
+    hist, bin_edges = np.histogram(times, bins=bins, range=(0, max_time))  # 统计每分钟弹幕数
+
+    # 生成时间轴（分钟）
+    minutes = [i for i in range(bins)]
+
+    # 找到弹幕峰值（关键时刻）
+    peak_indices = np.where(hist >= np.percentile(hist, 95))[0]  # 取前 5% 的峰值
+    peaks = [(minutes[i], hist[i]) for i in peak_indices]  # (分钟, 弹幕数)
+
+    # 设置中文字体
+    font = FontProperties(fname=FONT_PATH, size=12)
+
+    # 创建折线图
+    plt.figure(figsize=(10, 6))
+    plt.plot(minutes, hist, color='#1f77b4', linewidth=2, label='弹幕数量')
+    plt.fill_between(minutes, hist, color='#1f77b4', alpha=0.2)
+
+    # 标注关键时刻
+    for peak_min, peak_count in peaks:
+        plt.scatter(peak_min, peak_count, color='red', s=50, zorder=5)
+        plt.text(peak_min, peak_count + 5, f'关键时刻\n{int(peak_min)}分', 
+                 ha='center', va='bottom', fontproperties=font, color='red')
+
+    # 设置图表样式
+    plt.title('弹幕随时间分布', fontproperties=font, size=16)
+    plt.xlabel('时间 (分钟)', fontproperties=font)
+    plt.ylabel('弹幕数量', fontproperties=font)
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.legend(prop=font)
+
+    # 保存图片到内存
+    img_io = BytesIO()
+    plt.savefig(img_io, format='PNG', bbox_inches='tight', dpi=100)
+    img_io.seek(0)
+    img_base64 = base64.b64encode(img_io.getvalue()).decode('utf-8')
+    plt.close()
+
+    if logger:
+        logger.debug("Danmaku timeline image generated successfully")
+    
+    return f'data:image/png;base64,{img_base64}'

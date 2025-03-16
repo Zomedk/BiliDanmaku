@@ -3,7 +3,7 @@ import requests
 
 # 下载封面图片到本地
 def download_cover_image(cover_url):
-    cover_path = 'D:/Lernen/danmaku_test/backend/static/covers/video_cover.jpg'  # 本地保存路径
+    cover_path = 'D:/Lernen/danmaku_test/danmaku_test/backend/static/covers/video_cover.jpg'  # 本地保存路径
     
     # 创建目录（如果不存在）
     if not os.path.exists(os.path.dirname(cover_path)):
