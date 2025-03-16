@@ -8,7 +8,6 @@ new Vue({
         itemsPerPage: 50, // 每页显示的弹幕数
         totalPages: 1,    // 总页数
         isLoading: false  // 处理加载状态，防止重复请求
-        wordFrequency: []
     },
     methods: {
         fetchVideoInfo() {
@@ -39,22 +38,6 @@ new Vue({
                 console.error('Error:', error);  // 在控制台输出错误信息
             });
         },
-        //词频统计
-        async wordFrequency() {
-            try {
-              const response = await axios.post('/api/word_frequency', {
-                bv: 'BV1PCwLe2Ei6'  // 填入你要查询的BV号
-              });
-              
-              if (response.data.top_words) {
-                this.wordFrequency = response.data.top_words;
-              } else {
-                console.error('没有获取到词频数据');
-              }
-            } catch (error) {
-              console.error('获取词频统计失败', error);
-            }
-          },
         // 获取弹幕数据
         fetchDanmaku() {
             console.log("Fetching danmaku for BV:", this.bvInput);

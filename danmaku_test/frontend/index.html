@@ -64,17 +64,7 @@
                     </div>
                 </div>
                 <!-- 在页面上添加一个按钮，点击后触发词频统计 -->
-                <button @click="getWordFrequency">获取词频统计</button>
-
-                <!-- 显示词频统计的部分 -->
-                <div v-if="wordFrequency.length > 0">
-                    <h3>词频统计：</h3>
-                    <ul>
-                        <li v-for="(word, index) in wordFrequency" :key="index">
-                            {{ word[0] }}: {{ word[1] }} 次
-                        </li>
-                    </ul>
-                </div>
+                
                 <!-- 查询弹幕按钮 -->
                 <div class="input-group">
                     <button @click="fetchDanmaku" class="btn-primary">查询弹幕</button>
