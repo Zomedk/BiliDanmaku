@@ -9,6 +9,10 @@ from modules.cover_image import download_cover_image  # 从cover_image模块导�
 from modules.utils import handle_bv_input  # 从utils模块导入处理BV号的函数
 from modules.logger import app_logger  # 使用app_logger作为日志记录器
 from modules.danmaku_analysis import calculate_word_frequency
+from wordcloud import WordCloud
+from io import BytesIO
+import base64
+
 
 app = Flask(__name__)  # 创建Flask应用实例
 # 启用 CORS，允许所有来源访问
@@ -21,6 +25,9 @@ save_folder = './static/danmaku'
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 }
+
+# 字体路径（需要替换为实际路径）
+FONT_PATH = 'C:/Windows/Fonts/simhei.ttf'  # 请确保路径正确
 
 # API 路由：处理视频信息请求
 @app.route('/api/video', methods=['POST'])
@@ -160,11 +167,29 @@ def word_cloud():
             danmaku_data = danmaku_data.get('danmaku_list', [])
         if not danmaku_data:
             raise ValueError("未获取到弹幕数据")
-        # 计算词频并格式化为词云数据
+        
+        # 计算词频
         top_words = calculate_word_frequency(danmaku_data, logger=app_logger)
-        word_cloud_data = [[word, freq * 10] for word, freq in top_words]  # 放大频率以增强视觉效果
-        app_logger.debug(f"Word cloud data prepared: {word_cloud_data[:5]}...")
-        return jsonify({'word_cloud': word_cloud_data})
+        word_freq = {word: freq for word, freq in top_words}
+        
+        # 生成词云图
+        wc = WordCloud(
+            font_path=FONT_PATH,
+            width=600,
+            height=400,
+            background_color='#f5f5f5',
+            max_words=100,
+            colormap='viridis'
+        ).generate_from_frequencies(word_freq)
+        
+        # 将图片转为 Base64
+        img_io = BytesIO()
+        wc.to_file(img_io, format='png')
+        img_io.seek(0)
+        img_base64 = base64.b64encode(img_io.getvalue()).decode('utf-8')
+        
+        app_logger.debug("Word cloud image generated successfully")
+        return jsonify({'image': f'data:image/png;base64,{img_base64}'})
     except Exception as e:
         app_logger.error(f"Error in word cloud generation: {str(e)}")
         return jsonify({'error': f"词云图生成失败: {str(e)}"}), 400

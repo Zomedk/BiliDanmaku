@@ -5,17 +5,17 @@ new Vue({
         videoInfo: null,
         danmakuData: [],
         wordFrequency: [],
+        wordCloudImage: '', // 存储词云图 Base64
         currentPage: 1,
         itemsPerPage: 50,
         totalPages: 1,
-        wordCloudData: [],
         isLoading: false,
-        activeTab: 'video-info', // 默认选项卡
+        activeTab: 'video-info',
         tabs: [
             { id: 'video-info', name: '视频信息' },
             { id: 'danmaku', name: '弹幕列表' },
             { id: 'word-frequency', name: '词频统计' },
-            { id: 'advanced-analysis', name: '高级分析' } // 占位未来功能
+            { id: 'advanced-analysis', name: '高级分析' }
         ]
     },
     methods: {
@@ -33,7 +33,7 @@ new Vue({
                     alert(data.error);
                 } else {
                     this.videoInfo = data;
-                    this.activeTab = 'video-info'; // 默认显示视频信息
+                    this.activeTab = 'video-info';
                 }
             })
             .catch(error => {
@@ -96,13 +96,10 @@ new Vue({
                 const response = await axios.post('http://127.0.0.1:5000/api/word_cloud', {
                     bv: this.bvInput
                 });
-                if (response.data.word_cloud) {
-                    this.wordCloudData = response.data.word_cloud;
-                    this.$nextTick(() => { // 确保 DOM 更新后再渲染
-                        this.renderWordCloud();
-                    });
+                if (response.data.image) {
+                    this.wordCloudImage = response.data.image;
                 } else {
-                    alert('词云数据为空');
+                    alert('词云图生成失败');
                 }
             } catch (error) {
                 console.error('获取词云失败:', error.response ? error.response.data : error);
@@ -110,19 +107,6 @@ new Vue({
             } finally {
                 this.isLoading = false;
             }
-        },
-        renderWordCloud() {
-            const options = {
-                list: this.wordCloudData,
-                gridSize: 10,
-                weightFactor: 2,
-                fontFamily: 'Arial, sans-serif',
-                color: 'random-dark',
-                backgroundColor: '#f5f5f5',
-                rotateRatio: 0.5,
-                rotationSteps: 2
-            };
-            WordCloud(document.getElementById('word-cloud'), options);
         },
         changePage(page) {
             if (page < 1 || page > this.totalPages) {

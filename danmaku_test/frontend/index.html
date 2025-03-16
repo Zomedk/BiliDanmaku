@@ -94,7 +94,7 @@
                     <div v-else><p>暂无词频统计数据，点击“获取词频统计”按钮获取。</p></div>
                 </div>
 
-                <!-- 占位：未来功能 -->
+                <!-- 高级分析（词云图） -->
                 <div v-show="activeTab === 'advanced-analysis'" class="tab-pane">
                     <h3>高级分析</h3>
                     <div class="input-group">
@@ -102,8 +102,8 @@
                             {{ isLoading ? '生成中...' : '生成词云图' }}
                         </button>
                     </div>
-                    <div v-if="wordCloudData.length > 0" class="word-cloud-container">
-                        <canvas id="word-cloud" width="600" height="400"></canvas>
+                    <div v-if="wordCloudImage" class="word-cloud-container">
+                        <img :src="wordCloudImage" alt="词云图" class="word-cloud-image">
                     </div>
                     <div v-else><p>暂无词云数据，请点击“生成词云图”。</p></div>
                     <p>更多功能（关键词搜索、时间分布图等）敬请期待。</p>
