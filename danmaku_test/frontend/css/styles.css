@@ -6,28 +6,27 @@ body {
     margin: 0;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* 改为从顶部开始，便于内容扩展 */
     min-height: 100vh;
 }
 
 /* 容器样式 */
 .container {
     width: 100%;
-    max-width: 900px;
+    max-width: 1000px; /* 略微加宽以适配更多内容 */
     background-color: #ffffff;
     padding: 30px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     overflow: hidden;
-    margin-top: -100px;
 }
 
 /* 标题样式 */
 h1 {
-    font-size: 24px;
+    font-size: 28px; /* 加大标题 */
     font-weight: bold;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     color: #333;
 }
 
@@ -36,22 +35,51 @@ h1 {
     display: flex;
     justify-content: center;
     gap: 10px;
+    margin-bottom: 20px;
 }
 
 /* 输入框样式 */
 .input-field {
-    padding: 10px;
+    padding: 12px;
     font-size: 16px;
     border: 1px solid #cccccc;
     border-radius: 4px;
-    width: 60%;
-    max-width: 400px;
+    width: 70%; /* 加宽输入框 */
+    max-width: 500px;
 }
 
 /* 查询按钮样式 */
 .btn-primary {
     background-color: #007bff;
     color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-primary:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* 选项卡导航 */
+.tab-nav {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+    flex-wrap: wrap; /* 选项卡过多时换行 */
+}
+
+.tab-button {
+    background-color: #f0f0f0;
     border: none;
     padding: 10px 20px;
     font-size: 16px;
@@ -60,71 +88,73 @@ h1 {
     transition: background-color 0.3s;
 }
 
-/* 查询按钮悬停时的样式 */
-.btn-primary:hover {
+.tab-button:hover {
+    background-color: #e0e0e0;
+}
+
+.tab-active {
+    background-color: #007bff;
+    color: white;
+}
+
+.tab-active:hover {
     background-color: #0056b3;
 }
 
-/* 查询按钮禁用时的样式 */
-.btn-primary:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
+/* 选项卡内容区域 */
+.tab-content {
+    padding: 15px;
+}
+
+.tab-pane {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* 添加轻微阴影 */
 }
 
 /* 视频信息部分样式 */
-#video-info {
-    margin-top: 20px;
-}
-
-/* 每一项视频信息的样式 */
 .info-item {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
-/* 强调文字（如标题）加粗 */
 strong {
     font-weight: bold;
 }
 
-/* 链接的样式 */
 a {
     color: #007bff;
     text-decoration: none;
 }
 
-/* 链接悬停时的样式 */
 a:hover {
     text-decoration: underline;
 }
 
-/* 视频封面容器样式 */
 .cover-container {
     margin-top: 10px;
     text-align: center;
 }
 
-/* 视频封面图片样式 */
 .cover-image {
-    max-width: 800px;
+    max-width: 100%; /* 自适应宽度 */
     border-radius: 4px;
 }
 
 /* 词频统计部分样式 */
 .word-frequency {
-    margin-top: 20px;
+    margin-top: 15px;
     padding: 10px;
     background-color: #f5f5f5;
     border-radius: 5px;
 }
 
-/* 词频统计表格样式 */
 .word-frequency-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
 }
 
-/* 词频统计表格头部样式 */
 .word-frequency-table th {
     background-color: #007bff;
     color: white;
@@ -133,56 +163,32 @@ a:hover {
     font-size: 16px;
 }
 
-/* 词频统计表格单元格样式 */
 .word-frequency-table td {
     padding: 10px;
     border: 1px solid #cccccc;
     font-size: 14px;
-    text-align: left;
 }
 
-/* 词频统计表格行悬停效果 */
 .word-frequency-table tr:hover {
     background-color: #f1f1f1;
 }
 
-/* 加载状态提示样式 */
-.loading {
-    text-align: center;
-    color: #888;
-    margin-top: 20px;
-    font-size: 16px;
-}
-
 /* 弹幕列表样式 */
 .danmaku-list {
-    margin-top: 20px;
+    margin-top: 15px;
     padding: 10px;
     background-color: #f5f5f5;
     border-radius: 5px;
-    max-height: 300px;
+    max-height: 400px; /* 增加高度 */
     overflow-y: auto;
 }
 
-/* 弹幕列表中的ul样式 */
-.danmaku-list ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-/* 弹幕列表项样式 */
-.danmaku-list li {
-    margin-bottom: 5px;
-}
-
-/* 弹幕表格样式 */
 .danmaku-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
-/* 弹幕表格头部样式 */
 .danmaku-table th {
     background-color: #007bff;
     color: white;
@@ -191,15 +197,12 @@ a:hover {
     font-size: 16px;
 }
 
-/* 弹幕表格主体单元格样式 */
 .danmaku-table td {
     padding: 10px;
     border: 1px solid #cccccc;
     font-size: 14px;
-    text-align: left;
 }
 
-/* 弹幕表格行悬停效果 */
 .danmaku-table tr:hover {
     background-color: #f1f1f1;
 }
@@ -212,7 +215,6 @@ a:hover {
     margin-top: 20px;
 }
 
-/* 分页按钮样式 */
 .pagination button {
     background-color: #007bff;
     color: white;
@@ -224,13 +226,19 @@ a:hover {
     transition: background-color 0.3s;
 }
 
-/* 分页按钮悬停时的样式 */
 .pagination button:hover {
     background-color: #0056b3;
 }
 
-/* 分页按钮禁用时的样式 */
 .pagination button:disabled {
     background-color: #cccccc;
     cursor: not-allowed;
+}
+
+/* 加载状态提示样式 */
+.loading {
+    text-align: center;
+    color: #888;
+    margin-top: 20px;
+    font-size: 16px;
 }

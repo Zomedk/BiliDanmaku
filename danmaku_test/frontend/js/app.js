@@ -8,7 +8,14 @@ new Vue({
         currentPage: 1,
         itemsPerPage: 50,
         totalPages: 1,
-        isLoading: false
+        isLoading: false,
+        activeTab: 'video-info', // 默认选项卡
+        tabs: [
+            { id: 'video-info', name: '视频信息' },
+            { id: 'danmaku', name: '弹幕列表' },
+            { id: 'word-frequency', name: '词频统计' },
+            { id: 'advanced-analysis', name: '高级分析' } // 占位未来功能
+        ]
     },
     methods: {
         fetchVideoInfo() {
@@ -25,6 +32,7 @@ new Vue({
                     alert(data.error);
                 } else {
                     this.videoInfo = data;
+                    this.activeTab = 'video-info'; // 默认显示视频信息
                 }
             })
             .catch(error => {
@@ -34,24 +42,6 @@ new Vue({
             .finally(() => {
                 this.isLoading = false;
             });
-        },
-        async fetchWordFrequency() {
-            try {
-                this.isLoading = true;
-                const response = await axios.post('http://127.0.0.1:5000/api/word_frequency', {
-                    bv: this.bvInput
-                });
-                if (response.data.top_words) {
-                    this.wordFrequency = response.data.top_words;
-                } else {
-                    alert('词频数据为空');
-                }
-            } catch (error) {
-                alert(`获取词频失败: ${error.message}`);
-                console.error('Error:', error);
-            } finally {
-                this.isLoading = false;
-            }
         },
         fetchDanmaku() {
             this.isLoading = true;
@@ -78,6 +68,25 @@ new Vue({
             .finally(() => {
                 this.isLoading = false;
             });
+        },
+        async fetchWordFrequency() {
+            try {
+                this.isLoading = true;
+                console.log("Fetching word frequency for BV:", this.bvInput);
+                const response = await axios.post('http://127.0.0.1:5000/api/word_frequency', {
+                    bv: this.bvInput
+                });
+                if (response.data.top_words) {
+                    this.wordFrequency = response.data.top_words;
+                } else {
+                    alert('词频数据为空');
+                }
+            } catch (error) {
+                console.error('获取词频失败:', error.response ? error.response.data : error);
+                alert(`获取词频失败: ${error.response ? error.response.data.error : error.message}`);
+            } finally {
+                this.isLoading = false;
+            }
         },
         changePage(page) {
             if (page < 1 || page > this.totalPages) {
