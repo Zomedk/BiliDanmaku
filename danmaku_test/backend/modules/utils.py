@@ -23,11 +23,7 @@ def seconds_to_hms(seconds):
 
 # 新增辅助函数：将时间字符串转换为秒数
 def parse_time_to_seconds(time_str):
-    """
-    将 'HH:MM:SS' 或 'MM:SS' 格式的时间字符串转换为秒数
-    :param time_str: 时间字符串，如 '00:12:28'
-    :return: 秒数（浮点数）
-    """
+     
     try:
         parts = time_str.split(':')  # 按冒号分割
         if len(parts) == 3:  # HH:MM:SS
@@ -40,3 +36,20 @@ def parse_time_to_seconds(time_str):
             return float(time_str)  # 如果已经是数字，直接转换
     except (ValueError, TypeError):
         return 0  # 如果转换失败，返回 0
+    
+
+
+def hms_to_seconds(hms):
+    """将时分秒格式（字符串）转换为秒数（浮点数）"""
+    try:
+        if not hms or hms == "00:00:00":
+            return 0.0
+        parts = hms.split(':')
+        if len(parts) != 3:
+            raise ValueError(f"Invalid time format: {hms}")
+        hours, minutes, secs = map(float, parts)
+        return hours * 3600 + minutes * 60 + secs
+    except (ValueError, TypeError) as e:
+        from modules.logger import app_logger
+        app_logger.warning(f"Time conversion failed for {hms}: {str(e)}")
+        return 0.0

@@ -129,7 +129,6 @@
                 </div>
 
                 <!-- 情感分析 -->
-                <!-- 情感分析 -->
                 <div v-show="activeTab === 'sentiment'" class="tab-pane">
                     <div class="input-group">
                         <button @click="fetchSentiment" class="btn-primary" :disabled="isLoading">
@@ -154,6 +153,18 @@
                         <p>暂无情感分析结果，请点击“执行情感分析”</p>
                     </div>
                 </div>
+
+                <!-- 弹幕时间占比 -->
+                <div v-show="activeTab === 'time-proportion'" class="tab-pane">
+                    <div class="input-group">
+                        <button @click="fetchDanmakuTimeProportion" class="btn-primary" :disabled="isLoading">
+                            {{ isLoading ? '生成中...' : '生成时间占比图' }}
+                        </button>
+                    </div>
+                    <div v-if="timeProportionImage" class="time-proportion-container">
+                        <img :src="timeProportionImage" alt="弹幕时间占比图" class="time-proportion-image">
+                    </div>
+                    <div v-else><p>暂无时间占比数据，请点击“生成时间占比图”。</p></div>
                 </div>
             </div>
 

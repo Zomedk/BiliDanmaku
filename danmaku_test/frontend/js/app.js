@@ -4,10 +4,10 @@ new Vue({
         bvInput: '',
         videoInfo: null,
         danmakuData: [],
-        displayDanmaku: [],
         wordFrequency: [],
         wordCloudImage: '',
         danmakuTimelineImage: '',
+        timeProportionImage: '',
         currentPage: 1,
         itemsPerPage: 50,
         totalPages: 1,
@@ -20,7 +20,8 @@ new Vue({
             { id: 'danmaku', name: '弹幕列表' },
             { id: 'word-frequency', name: '词频统计' },
             { id: 'advanced-analysis', name: '高级分析' },
-            { id: 'sentiment', name: '情感分析' }
+            { id: 'sentiment', name: '情感分析' },
+            { id: 'time-proportion', name: '弹幕时间占比' }
         ]
     },
     methods: {
@@ -39,7 +40,7 @@ new Vue({
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
-                    alert(data.error);
+                    alert(`获取视频信息失败：${data.error}`);
                 } else {
                     this.videoInfo = data;
                     this.activeTab = 'video-info';
@@ -69,8 +70,9 @@ new Vue({
             .then(res => res.json())
             .then(data => {
                 if (data.error) {
-                    alert(data.error);
+                    alert(`获取弹幕失败：${data.error}`);
                 } else {
+                    console.log("Received danmaku:", data.danmaku.slice(0, 5));
                     Vue.set(this, 'danmakuData', data.danmaku);
                     this.totalPages = data.total_pages || 1;
                     this.currentPage = data.current_page;
@@ -92,13 +94,17 @@ new Vue({
                     bv: this.bvInput
                 });
                 if (response.data.top_words) {
+                    console.log("Received word frequency:", response.data.top_words.slice(0, 5));
                     this.wordFrequency = response.data.top_words;
                 } else {
                     alert('词频数据为空');
                 }
             } catch (error) {
-                console.error('获取词频失败:', error.response ? error.response.data : error);
-                alert(`获取词频失败: ${error.response ? error.response.data.error : error.message}`);
+                const errorMsg = error.response && error.response.data.error 
+                    ? `获取词频失败：${error.response.data.error}`
+                    : `获取词频失败：${error.message}`;
+                alert(errorMsg);
+                console.error('Error:', error);
             } finally {
                 this.isLoading = false;
             }
@@ -116,18 +122,16 @@ new Vue({
                     alert('词云图生成失败');
                 }
             } catch (error) {
-                console.error('获取词云失败:', error.response ? error.response.data : error);
-                alert(`获取词云失败: ${error.response ? error.response.data.error : error.message}`);
+                const errorMsg = error.response && error.response.data.error 
+                    ? `获取词云失败：${error.response.data.error}`
+                    : `获取词云失败：${error.message}`;
+                alert(errorMsg);
+                console.error('Error:', error);
             } finally {
                 this.isLoading = false;
             }
         },
         async fetchDanmakuTimeline() {
-            /**
-             * 获取弹幕时间分布图
-             * 调用后端 /api/danmaku_timeline，传递 BV 号
-             * 更新 danmakuTimelineImage 显示图片
-             */
             try {
                 this.isLoading = true;
                 console.log("Fetching danmaku timeline for BV:", this.bvInput);
@@ -140,18 +144,16 @@ new Vue({
                     alert('时间分布图生成失败');
                 }
             } catch (error) {
-                console.error('获取时间分布图失败:', error.response ? error.response.data : error);
-                alert(`获取时间分布图失败: ${error.response ? error.response.data.error : error.message}`);
+                const errorMsg = error.response && error.response.data.error 
+                    ? `获取时间分布图失败：${error.response.data.error}`
+                    : `获取时间分布图失败：${error.message}`;
+                alert(errorMsg);
+                console.error('Error:', error);
             } finally {
                 this.isLoading = false;
             }
         },
         async fetchSentiment() {
-            /**
-             * 执行情感分析
-             * 调用后端 /api/sentiment，传递 BV 号
-             * 更新 sentimentData 显示图表和关键词
-             */
             try {
                 this.isLoading = true;
                 console.log("Fetching sentiment analysis for BV:", this.bvInput);
@@ -166,14 +168,38 @@ new Vue({
                     alert('情感分析结果无效或无数据');
                 }
             } catch (error) {
-                console.error('情感分析失败:', error.response ? error.response.data : error);
                 this.sentimentData = null;
-                alert(`情感分析失败: ${error.response ? error.response.data.error : error.message}`);
+                const errorMsg = error.response && error.response.data.error 
+                    ? `情感分析失败：${error.response.data.error}`
+                    : `情感分析失败：${error.message}`;
+                alert(errorMsg);
+                console.error('Error:', error);
             } finally {
                 this.isLoading = false;
             }
         },
-        
+        async fetchDanmakuTimeProportion() {
+            try {
+                this.isLoading = true;
+                console.log("Fetching danmaku time proportion for BV:", this.bvInput);
+                const response = await axios.post('http://127.0.0.1:5000/api/danmaku_time_proportion', {
+                    bv: this.bvInput
+                });
+                if (response.data.image) {
+                    this.timeProportionImage = response.data.image;
+                } else {
+                    alert('生成时间占比图失败：无有效数据');
+                }
+            } catch (error) {
+                const errorMsg = error.response && error.response.data.error 
+                    ? `生成时间占比图失败：${error.response.data.error}`
+                    : `生成时间占比图失败：${error.message}`;
+                alert(errorMsg);
+                console.error('Error:', error);
+            } finally {
+                this.isLoading = false;
+            }
+        },
         changePage(page) {
             if (page < 1 || page > this.totalPages) {
                 alert(`页码超出范围（1-${this.totalPages}）`);
