@@ -4,26 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>B站视频分析工具</title>
+    <!-- 引入自定义样式 -->
     <link rel="stylesheet" href="css/styles.css">
+    <!-- 引入中文字体 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <!-- 引入 Vue 和 Axios 库 -->
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
+    <!-- Vue 挂载点 -->
     <div id="app">
+        <!-- 页面顶部标题 -->
         <header class="page-header">基于Python的哔哩哔哩弹幕量化分析可视化系统</header>
         <div class="container">
             <h1>B站视频分析工具</h1>
 
-            <!-- 输入区域 -->
+            <!-- 用户输入 BV号 或 视频链接的区域 -->
             <div class="input-group">
                 <input v-model="bvInput" placeholder="请输入 BV 号 或 视频链接" class="input-field">
+                <!-- 点击按钮触发 fetchVideoInfo 方法 -->
                 <button @click="fetchVideoInfo" class="btn-primary" :disabled="isLoading">
                     {{ isLoading ? '查询中...' : '查询' }}
                 </button>
             </div>
 
-            <!-- 选项卡导航 -->
+            <!-- 导航选项卡（只有获取到视频信息后才显示） -->
             <div class="tab-nav" v-if="videoInfo">
                 <button 
                     v-for="tab in tabs" 
@@ -35,9 +41,10 @@
                 </button>
             </div>
 
-            <!-- 选项卡内容 -->
+            <!-- 选中的选项卡内容区域 -->
             <div v-if="videoInfo" class="tab-content">
-                <!-- 视频信息 -->
+                
+                <!-- 视频信息展示区域 -->
                 <div v-show="activeTab === 'video-info'" class="tab-pane">
                     <h2>视频信息</h2>
                     <div class="info-item"><strong>标题：</strong><span>{{ videoInfo.title }}</span></div>
@@ -49,56 +56,56 @@
                     </div>
                 </div>
 
-            <!-- 弹幕列表 -->
-            <div v-show="activeTab === 'danmaku'" class="tab-pane">
-                <div class="input-group">
-                    <button @click="fetchDanmaku" class="btn-primary" :disabled="isLoading">
-                        {{ isLoading ? '加载中...' : '查询弹幕' }}
-                    </button>
-                </div>
-                <div class="input-group">
-                    <input v-model="searchKeyword" placeholder="请输入关键字搜索弹幕" class="input-field">
-                    <button @click="fetchDanmaku" class="btn-primary" :disabled="isLoading">
-                        {{ isLoading ? '搜索中...' : '搜索' }}
-                    </button>
-                </div>
-                <div v-if="danmakuData.length > 0" class="danmaku-list">
-                    <h3>{{ searchKeyword ? '搜索结果' : '弹幕列表' }}</h3>
-                    <table class="danmaku-table">
-                        <thead>
-                            <tr>
-                                <th @click="sortBy('time')" :class="{ 'sorting': sortBy === 'time' }">
-                                    弹幕时间
-                                    <span v-if="sortBy === 'time'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-                                </th>
-                                <th @click="sortBy('send_time')" :class="{ 'sorting': sortBy === 'send_time' }">
-                                    发送时间
-                                    <span v-if="sortBy === 'send_time'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-                                </th>
-                                <th>发送者哈希值</th>
-                                <th>内容</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="d in danmakuData" :key="`${d.time}-${d.send_time}-${d.hash}-${d.content}`">
-                                <td>{{ d.time }}</td>
-                                <td>{{ d.send_time }}</td>
-                                <td>{{ d.hash }}</td>
-                                <td>{{ d.content }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div class="pagination">
-                        <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1 || isLoading">上一页</button>
-                        <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
-                        <input v-model.number="pageInput" type="number" min="1" :max="totalPages" class="page-input" placeholder="页码">
-                        <button @click="jumpToPage" :disabled="!pageInput || pageInput < 1 || pageInput > totalPages || isLoading">跳转</button>
-                        <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages || isLoading">下一页</button>
+                <!-- 弹幕列表 -->
+                <div v-show="activeTab === 'danmaku'" class="tab-pane">
+                    <!-- 获取全部弹幕按钮 -->
+                    <div class="input-group">
+                        <button @click="fetchDanmaku" class="btn-primary" :disabled="isLoading">
+                            {{ isLoading ? '加载中...' : '查询弹幕' }}
+                        </button>
                     </div>
+                    <!-- 搜索弹幕关键字 -->
+                    <div class="input-group">
+                        <input v-model="searchKeyword" placeholder="请输入关键字搜索弹幕" class="input-field">
+                        <button @click="fetchDanmaku" class="btn-primary" :disabled="isLoading">
+                            {{ isLoading ? '搜索中...' : '搜索' }}
+                        </button>
+                    </div>
+                    <!-- 弹幕表格展示 -->
+                    <div v-if="danmakuData.length > 0" class="danmaku-list">
+                        <h3>{{ searchKeyword ? '搜索结果' : '弹幕列表' }}</h3>
+                        <table class="danmaku-table">
+                            <thead>
+                                <tr>
+                                    <th @click="sortBy('time')">弹幕时间</th>
+                                    <th @click="sortBy('send_time')">发送时间</th>
+                                    <th>发送者哈希值</th>
+                                    <th>内容</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="d in danmakuData" :key="`${d.time}-${d.send_time}-${d.hash}-${d.content}`">
+                                    <td>{{ d.time }}</td>
+                                    <td>{{ d.send_time }}</td>
+                                    <td>{{ d.hash }}</td>
+                                    <td>{{ d.content }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!-- 分页功能 -->
+                        <div class="pagination">
+                            <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1 || isLoading">上一页</button>
+                            <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
+                            <input v-model.number="pageInput" type="number" min="1" :max="totalPages" class="page-input" placeholder="页码">
+                            <button @click="jumpToPage" :disabled="!pageInput || pageInput < 1 || pageInput > totalPages || isLoading">跳转</button>
+                            <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages || isLoading">下一页</button>
+                        </div>
+                    </div>
+                    <!-- 没有找到弹幕 -->
+                    <div v-else-if="searchKeyword"><p>没有找到包含“{{ searchKeyword }}”的弹幕。</p></div>
+                    <!-- 初始状态提示 -->
+                    <div v-else><p>暂无弹幕数据，点击“查询弹幕”按钮获取。</p></div>
                 </div>
-                <div v-else-if="searchKeyword"><p>没有找到包含“{{ searchKeyword }}”的弹幕。</p></div>
-                <div v-else><p>暂无弹幕数据，点击“查询弹幕”按钮获取。</p></div>
-            </div>
 
                 <!-- 词频统计 -->
                 <div v-show="activeTab === 'word-frequency'" class="tab-pane">
@@ -121,9 +128,10 @@
                     <div v-else><p>暂无词频统计数据，点击“获取词频统计”按钮获取。</p></div>
                 </div>
 
-                <!-- 高级分析（词云图） -->
+                <!-- 词云图和时间分布图 -->
                 <div v-show="activeTab === 'advanced-analysis'" class="tab-pane">
                     <h3>高级分析</h3>
+                    <!-- 词云图 -->
                     <div class="input-group">
                         <button @click="fetchWordCloud" class="btn-primary" :disabled="isLoading">
                             {{ isLoading ? '生成中...' : '生成词云图' }}
@@ -133,7 +141,7 @@
                         <img :src="wordCloudImage" alt="词云图" class="word-cloud-image">
                     </div>
                     <div v-else><p>暂无词云数据，请点击“生成词云图”。</p></div>
-                    <!-- 弹幕时间分布图 -->
+                    <!-- 时间分布图 -->
                     <div class="input-group">
                         <button @click="fetchDanmakuTimeline" class="btn-primary" :disabled="isLoading">
                             {{ isLoading ? '生成中...' : '生成时间分布图' }}
@@ -153,16 +161,14 @@
                             {{ isLoading ? '分析中...' : '执行情感分析' }}
                         </button>
                     </div>
-                    
                     <div v-if="sentimentData">
-                        <!-- 情感分布统计 -->
+                        <!-- 情感数据 -->
                         <div class="sentiment-stats">
                             <p>积极: {{ sentimentData.counts.positive || 0 }} ({{ sentimentData.percentages.positive.toFixed(1) }}%)</p>
                             <p>消极: {{ sentimentData.counts.negative || 0 }} ({{ sentimentData.percentages.negative.toFixed(1) }}%)</p>
                             <p>中性: {{ sentimentData.counts.neutral || 0 }} ({{ sentimentData.percentages.neutral.toFixed(1) }}%)</p>
                         </div>
-                
-                        <!-- 情感分布图表 -->
+                        <!-- 情感分析图 -->
                         <div class="chart-container">
                             <img :src="sentimentData.chart" alt="情感分析图表" class="analysis-chart" @error="onChartError">
                         </div>
@@ -172,7 +178,7 @@
                     </div>
                 </div>
 
-                <!-- 弹幕时间占比 -->
+                <!-- 弹幕时间占比图 -->
                 <div v-show="activeTab === 'time-proportion'" class="tab-pane">
                     <div class="input-group">
                         <button @click="fetchDanmakuTimeProportion" class="btn-primary" :disabled="isLoading">
@@ -186,10 +192,12 @@
                 </div>
             </div>
 
-            <!-- 加载状态 -->
+            <!-- 加载中提示 -->
             <div v-if="isLoading" class="loading">数据加载中，请稍候...</div>
         </div>
     </div>
+
+    <!-- 引入 Vue 方法脚本 -->
     <script src="js/app.js"></script>
 </body>
 </html>
