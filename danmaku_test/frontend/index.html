@@ -54,19 +54,18 @@
                             {{ isLoading ? '加载中...' : '查询弹幕' }}
                         </button>
                     </div>
-                    <!-- 新增：弹幕查询区域 -->
-                    <div class="input-group" v-if="danmakuData.length > 0">
+                    <div class="input-group">
                         <input v-model="searchKeyword" placeholder="请输入关键字搜索弹幕" class="input-field">
-                        <button @click="searchDanmaku" class="btn-primary" :disabled="isLoading">
+                        <button @click="fetchDanmaku" class="btn-primary" :disabled="isLoading">
                             {{ isLoading ? '搜索中...' : '搜索' }}
                         </button>
                     </div>
-                    <div v-if="displayDanmaku.length > 0" class="danmaku-list">
+                    <div v-if="danmakuData.length > 0" class="danmaku-list">
                         <h3>{{ searchKeyword ? '搜索结果' : '弹幕列表' }}</h3>
                         <table class="danmaku-table">
                             <thead><tr><th>发送时间</th><th>发送者哈希值</th><th>内容</th></tr></thead>
                             <tbody>
-                                <tr v-for="d in paginatedDanmaku" :key="`${d.time}-${d.hash}-${d.content}-${d.uid || Math.random()}`">
+                                <tr v-for="d in danmakuData" :key="`${d.time}-${d.hash}-${d.content}`">
                                     <td>{{ d.time }}</td><td>{{ d.hash }}</td><td>{{ d.content }}</td>
                                 </tr>
                             </tbody>
@@ -77,7 +76,7 @@
                             <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages || isLoading">下一页</button>
                         </div>
                     </div>
-                    <div v-else-if="danmakuData.length > 0 && searchKeyword"><p>没有找到包含“{{ searchKeyword }}”的弹幕。</p></div>
+                    <div v-else-if="searchKeyword"><p>没有找到包含“{{ searchKeyword }}”的弹幕。</p></div>
                     <div v-else><p>暂无弹幕数据，点击“查询弹幕”按钮获取。</p></div>
                 </div>
 
@@ -124,7 +123,44 @@
                         <img :src="danmakuTimelineImage" alt="弹幕时间分布图" class="timeline-image">
                     </div>
                     <div v-else><p>暂无时间分布图，请点击“生成时间分布图”。</p></div>                    
-                    <p>更多功能（关键词搜索、时间分布图等）敬请期待。</p>
+                    <p>更多功能（观众IP属地统计，情感分析等）敬请期待。</p>
+                </div>
+
+                <!-- 新增选项卡内容 -->
+                <div v-show="activeTab === 'sentiment'" class="tab-pane">
+                    <div class="input-group">
+                        <button @click="fetchSentiment" class="btn-primary" :disabled="isLoading">
+                            {{ isLoading ? '分析中...' : '执行情感分析' }}
+                        </button>
+                    </div>
+                    
+                    <div v-if="sentimentData">
+                        <!-- 情感分布图表 -->
+                        <div class="chart-container">
+                            <img :src="sentimentData.chart" alt="情感分析图表" class="analysis-chart">
+                        </div>
+
+                        <!-- 情感关键词 -->
+                        <div class="word-lists">
+                            <div class="word-list">
+                                <h4>积极关键词 TOP10</h4>
+                                <ul>
+                                    <li v-for="(word, index) in sentimentData.positive_words" :key="'pos'+index">
+                                        {{ word[0] }} ({{ word[1] }}次)
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div class="word-list">
+                                <h4>消极关键词 TOP10</h4>
+                                <ul>
+                                    <li v-for="(word, index) in sentimentData.negative_words" :key="'neg'+index">
+                                        {{ word[0] }} ({{ word[1] }}次)
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             

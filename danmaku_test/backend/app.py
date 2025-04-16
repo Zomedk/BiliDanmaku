@@ -7,6 +7,8 @@ from modules.cover_image import download_cover_image  # 下载封面图片
 from modules.utils import handle_bv_input  # 处理 BV 号输入
 from modules.logger import app_logger  # 日志工具
 from modules.danmaku_analysis import calculate_word_frequency, generate_word_cloud, generate_danmaku_timeline
+from modules.sentiment_analysis import analyze_sentiment
+# python D:\Lernen\danmaku_test\danmaku_test\backend\app.py
 
 # 创建 Flask 应用
 app = Flask(__name__)
@@ -40,27 +42,40 @@ def video_info():
         app_logger.error(f"Error: {str(e)}")  # 记录错误
         return jsonify({'error': str(e)}), 400  # 返回错误信息，状态码 400
 
-# API 路由：获取弹幕数据
+# API 路由：获取弹幕数据（新增搜索功能）
 @app.route('/api/danmaku', methods=['POST'])
 def danmaku():
-    """处理前端发送的弹幕请求，支持分页"""
+    """处理前端发送的弹幕请求，支持分页和关键字搜索"""
     data = request.json
     bv_input = data.get('bv', '')  # 获取 BV 号
     page = data.get('page', 1)  # 获取页码，默认第 1 页
     per_page = data.get('per_page', 50)  # 每页条数，默认 50
-    app_logger.debug(f"Received request for danmaku: BV={bv_input}, page={page}, per_page={per_page}")
+    keyword = data.get('keyword', '')  # 获取搜索关键字，默认空字符串
+    app_logger.debug(f"Received request for danmaku: BV={bv_input}, page={page}, per_page={per_page}, keyword={keyword}")
     try:
         bv = handle_bv_input(bv_input)  # 格式化 BV 号
         cid = get_video_cid(bv)  # 获取视频的 CID
-        danmaku_data = fetch_danmaku(cid)  # 获取弹幕数据
+        danmaku_data = fetch_danmaku(cid)  # 获取所有弹幕数据
         if isinstance(danmaku_data, dict):  # 如果返回的是字典
             danmaku_data = danmaku_data.get('danmaku_list', [])  # 提取弹幕列表
         if not danmaku_data:  # 如果没有数据
             raise Exception("未获取到弹幕数据")
-        start = (page - 1) * per_page  # 计算分页起始位置
+
+        # 根据关键字过滤弹幕（忽略大小写）
+        if keyword:  # 如果提供了关键字
+            filtered_danmaku = [d for d in danmaku_data if keyword.lower() in d.get('content', '').lower()]
+            app_logger.debug(f"Filtered danmaku count with keyword '{keyword}': {len(filtered_danmaku)}")
+        else:  # 如果关键字为空，返回全部弹幕
+            filtered_danmaku = danmaku_data
+            app_logger.debug(f"Total danmaku count: {len(filtered_danmaku)}")
+
+        # 分页处理
+        total_items = len(filtered_danmaku)  # 过滤后的总条数
+        total_pages = (total_items + per_page - 1) // per_page  # 计算总页数
+        start = (page - 1) * per_page  # 计算起始位置
         end = start + per_page  # 计算结束位置
-        paginated_danmaku = danmaku_data[start:end]  # 分页数据
-        total_pages = (len(danmaku_data) + per_page - 1) // per_page  # 计算总页数
+        paginated_danmaku = filtered_danmaku[start:end]  # 分页后的弹幕数据
+
         return jsonify({  # 返回分页结果
             'danmaku': paginated_danmaku,
             'total_pages': total_pages,
@@ -138,7 +153,26 @@ def danmaku_timeline():
         app_logger.error(f"Error in danmaku timeline generation: {str(e)}")
         return jsonify({'error': f"时间分布图生成失败: {str(e)}"}), 400
     
+
+# 新增路由
+@app.route('/api/sentiment', methods=['POST'])
+def sentiment_analysis():
+    """处理情感分析请求"""
+    data = request.json
+    bv_input = data.get('bv', '')
+    try:
+        bv = handle_bv_input(bv_input)
+        cid = get_video_cid(bv)
+        danmaku_data = fetch_danmaku(cid)
+        if isinstance(danmaku_data, dict):
+            danmaku_data = danmaku_data.get('danmaku_list', [])
+        analysis_result = analyze_sentiment(danmaku_data)
+        return jsonify(analysis_result)
+    except Exception as e:
+        app_logger.error(f"情感分析失败: {str(e)}")
+        return jsonify({'error': f"情感分析失败: {str(e)}"}), 400
     
+      
 # 启动 Flask 应用
 if __name__ == '__main__':
     app.run(debug=True)  # 调试模式运行，方便开发时查看错误
