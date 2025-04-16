@@ -1,5 +1,5 @@
 # 导入需要的库和模块
-from flask import Flask, request, jsonify  # Flask 框架核心组件
+from flask import Flask, request, jsonify, send_from_directory  # Flask 框架核心组件及静态文件支持
 from flask_cors import CORS  # 允许跨域请求
 from modules.video_info import get_video_info, get_video_cid  # 获取视频信息和 CID
 from modules.danmaku import fetch_danmaku  # 获取弹幕数据
@@ -10,15 +10,26 @@ from modules.danmaku_analysis import calculate_word_frequency, generate_word_clo
 from modules.sentiment_analysis import analyze_sentiment
 # python D:\Lernen\danmaku_test\danmaku_test\backend\app.py
 
+
 # 创建 Flask 应用
 app = Flask(__name__)
-CORS(app)  # 启用跨域支持
+# 配置 CORS，允许特定来源（包括前端可能的地址和通配符）
+CORS(app, resources={r"/api/*": {"origins": ["http://127.0.0.1:5000", "http://127.0.0.1:8000", "*"]}})
 
 # 定义常量
 save_folder = './static/danmaku'  # 保存弹幕文件的文件夹
 headers = {  # 模拟浏览器请求头
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 }
+
+# 提供前端静态文件
+@app.route('/')
+def serve_index():
+    return send_from_directory('../frontend', 'index.html')
+
+@app.route('/<path:path>')
+def serve_static(path):
+    return send_from_directory('../frontend', path)
 
 # API 路由：获取视频信息
 @app.route('/api/video', methods=['POST'])
@@ -30,7 +41,7 @@ def video_info():
     try:
         app_logger.debug("Processing video info")  # 记录处理开始
         bv = handle_bv_input(bv_input)  # 格式化 BV 号
-        title, cover_path, up_name, up_link = get_video_info(bv)  # 获取视频信息
+        title, cover_path, up_name, up_link, video_duration, formatted_duration = get_video_info(bv)  # 获取视频信息
         app_logger.debug(f"Video Info: {title}, {cover_path}, {up_name}, {up_link}")  # 记录结果
         return jsonify({  # 返回 JSON 数据给前端
             'title': title,
@@ -132,8 +143,15 @@ def word_cloud():
         return jsonify({'error': f"词云图生成失败: {str(e)}"}), 400
 
 # API：生成弹幕时间分布图
-@app.route('/api/danmaku_timeline', methods=['POST'])
+@app.route('/api/danmaku_timeline', methods=['POST', 'OPTIONS'])
 def danmaku_timeline():
+    if request.method == 'OPTIONS':
+        response = jsonify({"message": "CORS preflight successful"})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Accept')
+        response.headers.add('Access-Control-Max-Age', '86400')  # 缓存预检结果 24 小时
+        return response, 200
     data = request.json
     bv_input = data.get('bv', '')
     app_logger.debug(f"Received request for danmaku timeline: BV={bv_input}")
@@ -148,11 +166,12 @@ def danmaku_timeline():
         
         timeline_image = generate_danmaku_timeline(danmaku_data, logger=app_logger)
         
-        return jsonify({'image': timeline_image})
+        response = jsonify({'image': timeline_image})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response
     except Exception as e:
         app_logger.error(f"Error in danmaku timeline generation: {str(e)}")
         return jsonify({'error': f"时间分布图生成失败: {str(e)}"}), 400
-    
 
 # 新增路由
 @app.route('/api/sentiment', methods=['POST'])
@@ -172,7 +191,6 @@ def sentiment_analysis():
         app_logger.error(f"情感分析失败: {str(e)}")
         return jsonify({'error': f"情感分析失败: {str(e)}"}), 400
     
-      
 # 启动 Flask 应用
 if __name__ == '__main__':
-    app.run(debug=True)  # 调试模式运行，方便开发时查看错误
+    app.run(debug=True, port=5000)

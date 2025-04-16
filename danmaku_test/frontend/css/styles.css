@@ -1,270 +1,295 @@
+:root {
+    --primary-color: #fb7299;
+    --secondary-color: #007bff;
+    --background-color: #f8f9fa;
+    --text-color: #333;
+    --light-pink: #ffe6f0;
+}
+
 /* 设置页面的整体样式 */
 body {
-    font-family: Arial, sans-serif; /* 使用 Arial 字体，如果没有就用系统默认无衬线字体 */
-    padding: 20px; /* 页面内边距 20 像素 */
-    background-color: #f9f9f9; /* 浅灰色背景 */
-    margin: 0; /* 外边距为 0 */
-    display: flex; /* 使用弹性布局 */
-    justify-content: center; /* 水平居中 */
-    align-items: flex-start; /* 从顶部开始对齐 */
-    min-height: 100vh; /* 最小高度为视口高度，确保内容撑满页面 */
+    font-family: 'Noto Sans SC', Arial, sans-serif;
+    padding: 20px;
+    background-color: var(--background-color);
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+/* 页眉样式 */
+.page-header {
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+    background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px 8px 0 0;
 }
 
 /* 主容器样式 */
 .container {
-    width: 100%; /* 宽度占满父元素 */
-    max-width: 1000px; /* 最大宽度 1000 像素 */
-    background-color: #ffffff; /* 白色背景 */
-    padding: 30px; /* 内边距 30 像素 */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加阴影，增加立体感 */
-    border-radius: 8px; /* 圆角 8 像素 */
-    overflow: hidden; /* 内容超出时隐藏 */
+    width: 100%;
+    max-width: 1000px;
+    background-color: #ffffff;
+    padding: 30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
 }
 
 /* 标题样式 */
 h1 {
-    font-size: 28px; /* 字体大小 28 像素 */
-    font-weight: bold; /* 加粗 */
-    text-align: center; /* 居中对齐 */
-    margin-bottom: 25px; /* 下边距 25 像素 */
-    color: #333; /* 深灰色文字 */
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 25px;
+    color: var(--text-color);
 }
 
 /* 输入框和按钮的容器 */
 .input-group {
-    display: flex; /* 弹性布局 */
-    justify-content: center; /* 水平居中 */
-    gap: 10px; /* 子元素间距 10 像素 */
-    margin-bottom: 20px; /* 下边距 20 像素 */
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
 /* 输入框样式 */
 .input-field {
-    padding: 12px; /* 内边距 12 像素 */
-    font-size: 16px; /* 字体大小 16 像素 */
-    border: 1px solid #cccccc; /* 灰色边框 */
-    border-radius: 4px; /* 圆角 4 像素 */
-    width: 70%; /* 宽度占 70% */
-    max-width: 500px; /* 最大宽度 500 像素 */
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    width: 70%;
+    max-width: 500px;
 }
 
 /* 按钮样式 */
 .btn-primary {
-    background-color: #007bff; /* 蓝色背景 */
-    color: white; /* 白色文字 */
-    border: none; /* 无边框 */
-    padding: 12px 24px; /* 内边距 12x24 像素 */
-    font-size: 16px; /* 字体大小 16 像素 */
-    cursor: pointer; /* 鼠标悬停时显示手形 */
-    border-radius: 4px; /* 圆角 4 像素 */
-    transition: background-color 0.3s; /* 背景色变化动画，持续 0.3 秒 */
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
 }
 
 .btn-primary:hover {
-    background-color: #0056b3; /* 鼠标悬停时变深蓝 */
+    background-color: #e65c8a;
 }
 
 .btn-primary:disabled {
-    background-color: #cccccc; /* 禁用时变灰 */
-    cursor: not-allowed; /* 鼠标显示禁用符号 */
+    background-color: #cccccc;
+    cursor: not-allowed;
 }
 
 /* 选项卡导航 */
 .tab-nav {
-    display: flex; /* 弹性布局 */
-    justify-content: center; /* 水平居中 */
-    gap: 15px; /* 间距 15 像素 */
-    margin: 20px 0; /* 上下边距 20 像素 */
-    flex-wrap: wrap; /* 内容过多时换行 */
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+    flex-wrap: wrap;
 }
 
 .tab-button {
-    background-color: #f0f0f0; /* 浅灰背景 */
-    border: none; /* 无边框 */
-    padding: 10px 20px; /* 内边距 10x20 像素 */
-    font-size: 16px; /* 字体大小 16 像素 */
-    cursor: pointer; /* 手形光标 */
-    border-radius: 4px; /* 圆角 4 像素 */
-    transition: background-color 0.3s; /* 背景色动画 */
+    background-color: #f0f0f0;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
 }
 
 .tab-button:hover {
-    background-color: #e0e0e0; /* 悬停时变深灰 */
+    background-color: #e0e0e0;
 }
 
 .tab-active {
-    background-color: #007bff; /* 激活时蓝色 */
-    color: white; /* 白色文字 */
+    background-color: var(--secondary-color);
+    color: white;
 }
 
 .tab-active:hover {
-    background-color: #0056b3; /* 激活悬停时深蓝 */
+    background-color: #0056b3;
 }
 
 /* 选项卡内容区域 */
 .tab-content {
-    padding: 15px; /* 内边距 15 像素 */
+    padding: 15px;
 }
 
 .tab-pane {
-    background-color: #fff; /* 白色背景 */
-    padding: 15px; /* 内边距 15 像素 */
-    border-radius: 4px; /* 圆角 4 像素 */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* 轻微阴影 */
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid #ddd;
 }
 
 /* 视频信息项 */
 .info-item {
-    margin-bottom: 12px; /* 下边距 12 像素 */
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #ddd;
 }
 
 strong {
-    font-weight: bold; /* 加粗文字 */
+    font-weight: bold;
 }
 
 a {
-    color: #007bff; /* 蓝色链接 */
-    text-decoration: none; /* 无下划线 */
+    color: var(--secondary-color);
+    text-decoration: none;
 }
 
 a:hover {
-    text-decoration: underline; /* 悬停时加下划线 */
+    text-decoration: underline;
 }
 
 .cover-container {
-    margin-top: 10px; /* 上边距 10 像素 */
-    text-align: center; /* 居中对齐 */
+    margin-top: 10px;
+    text-align: center;
 }
 
 .cover-image {
-    max-width: 100%; /* 图片宽度自适应 */
-    border-radius: 4px; /* 圆角 4 像素 */
+    max-width: 100%;
+    border-radius: 4px;
 }
 
 /* 词频统计区域 */
 .word-frequency {
-    margin-top: 15px; /* 上边距 15 像素 */
-    padding: 10px; /* 内边距 10 像素 */
-    background-color: #f5f5f5; /* 浅灰背景 */
-    border-radius: 5px; /* 圆角 5 像素 */
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-radius: 5px;
 }
 
 .word-frequency-table {
-    width: 100%; /* 占满宽度 */
-    border-collapse: collapse; /* 边框合并 */
-    margin-top: 10px; /* 上边距 10 像素 */
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
 }
 
 .word-frequency-table th {
-    background-color: #007bff; /* 蓝色表头 */
-    color: white; /* 白色文字 */
-    padding: 12px; /* 内边距 12 像素 */
-    text-align: left; /* 左对齐 */
-    font-size: 16px; /* 字体大小 16 像素 */
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-size: 16px;
 }
 
 .word-frequency-table td {
-    padding: 10px; /* 内边距 10 像素 */
-    border: 1px solid #cccccc; /* 灰色边框 */
-    font-size: 14px; /* 字体大小 14 像素 */
+    padding: 10px;
+    border: 1px solid #cccccc;
+    font-size: 14px;
 }
 
 .word-frequency-table tr:hover {
-    background-color: #f1f1f1; /* 悬停时变浅灰 */
+    background-color: #f1f1f1;
 }
 
 /* 弹幕列表区域 */
 .danmaku-list {
-    margin-top: 15px; /* 上边距 15 像素 */
-    padding: 10px; /* 内边距 10 像素 */
-    background-color: #f5f5f5; /* 浅灰背景 */
-    border-radius: 5px; /* 圆角 5 像素 */
-    max-height: 400px; /* 最大高度 400 像素 */
-    overflow-y: auto; /* 垂直滚动 */
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-radius: 5px;
+    max-height: 400px;
+    overflow-y: auto;
 }
 
 .danmaku-table {
-    width: 100%; /* 占满宽度 */
-    border-collapse: collapse; /* 边框合并 */
-    margin-top: 10px; /* 上边距 10 像素 */
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
 }
 
 .danmaku-table th {
-    background-color: #007bff; /* 蓝色表头 */
-    color: white; /* 白色文字 */
-    padding: 12px; /* 内边距 12 像素 */
-    text-align: left; /* 左对齐 */
-    font-size: 16px; /* 字体大小 16 像素 */
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-size: 16px;
 }
 
 .danmaku-table td {
-    padding: 10px; /* 内边距 10 像素 */
-    border: 1px solid #cccccc; /* 灰色边框 */
-    font-size: 14px; /* 字体大小 14 像素 */
+    padding: 10px;
+    border: 1px solid #cccccc;
+    font-size: 14px;
 }
 
 .danmaku-table tr:hover {
-    background-color: #f1f1f1; /* 悬停时变浅灰 */
+    background-color: #f1f1f1;
 }
 
 /* 分页按钮 */
 .pagination {
-    display: flex; /* 弹性布局 */
-    justify-content: center; /* 水平居中 */
-    gap: 15px; /* 间距 15 像素 */
-    margin-top: 20px; /* 上边距 20 像素 */
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
 }
 
 .pagination button {
-    background-color: #007bff; /* 蓝色背景 */
-    color: white; /* 白色文字 */
-    padding: 10px 15px; /* 内边距 10x15 像素 */
-    border: none; /* 无边框 */
-    border-radius: 4px; /* 圆角 4 像素 */
-    cursor: pointer; /* 手形光标 */
-    font-size: 16px; /* 字体大小 16 像素 */
-    transition: background-color 0.3s; /* 背景色动画 */
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
 }
 
 .pagination button:hover {
-    background-color: #0056b3; /* 悬停时深蓝 */
+    background-color: #e65c8a;
 }
 
 .pagination button:disabled {
-    background-color: #cccccc; /* 禁用时灰色 */
-    cursor: not-allowed; /* 禁用光标 */
+    background-color: #cccccc;
+    cursor: not-allowed;
 }
 
 /* 词云图容器 */
 .word-cloud-container {
-    margin-top: 15px; /* 上边距 15 像素 */
-    text-align: center; /* 居中对齐 */
-    background-color: #f9f9f9; /* 浅灰背景，衬托透明词云 */
-    padding: 10px; /* 内边距 10 像素 */
-    border-radius: 8px; /* 圆角 8 像素 */
+    margin-top: 15px;
+    text-align: center;
+    background-color: var(--light-pink);
+    padding: 10px;
+    border-radius: 8px;
 }
 
 /* 词云图图片 */
 .word-cloud-image {
-    max-width: 100%; /* 宽度自适应 */
-    max-height: 600px; /* 最大高度 600 像素 */
-    border-radius: 8px; /* 圆角 8 像素 */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加阴影，增加立体感 */
+    max-width: 100%;
+    max-height: 600px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* 加载提示 */
 .loading {
-    text-align: center; /* 居中对齐 */
-    color: #888; /* 灰色文字 */
-    margin-top: 20px; /* 上边距 20 像素 */
-    font-size: 16px; /* 字体大小 16 像素 */
+    text-align: center;
+    color: #888;
+    margin-top: 20px;
+    font-size: 16px;
 }
 
 /* 时间分布图容器 */
 .timeline-container {
     margin-top: 15px;
     text-align: center;
-    background-color: #f9f9f9; /* 浅灰背景 */
+    background-color: var(--light-pink);
     padding: 10px;
     border-radius: 8px;
 }
@@ -272,10 +297,11 @@ a:hover {
 /* 时间分布图图片 */
 .timeline-image {
     max-width: 100%;
-    max-height: 600px; /* 与词云图一致 */
+    max-height: 600px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加阴影 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+
 /* 新增样式 */
 .analysis-chart {
     max-width: 100%;
@@ -299,7 +325,7 @@ a:hover {
 
 .word-list h4 {
     margin: 0 0 10px 0;
-    color: #2c3e50;
+    color: var(--text-color);
 }
 
 .word-list ul {
@@ -311,4 +337,47 @@ a:hover {
 .word-list li {
     padding: 5px 0;
     border-bottom: 1px solid #eee;
+}
+
+/* 响应式设计：针对屏幕宽度小于 768px 的设备（如手机和平板），调整布局以适应小屏幕 */
+/* 媒体查询确保样式仅在指定屏幕尺寸下应用，优化移动端用户体验 */
+@media (max-width: 768px) {
+    /* 页眉样式调整 */
+    /* 缩小字体大小以适应小屏幕，减少内边距以节省空间 */
+    .page-header {
+        font-size: 18px; /* 字体大小从 24px 减小到 18px */
+        padding: 15px; /* 内边距从 20px 减小到 15px */
+    }
+
+    /* 主容器样式调整 */
+    /* 减少内边距，确保内容在小屏幕上有更多可用空间 */
+    .container {
+        padding: 10px; /* 内边距从 30px 减小到 10px */
+    }
+
+    /* 输入框和按钮容器样式调整 */
+    /* 改为垂直排列（列布局），并居中对齐，确保输入框和按钮在小屏幕上整齐排列 */
+    .input-group {
+        flex-direction: column; /* 从水平排列改为垂直排列 */
+        align-items: center; /* 子元素水平居中 */
+    }
+
+    /* 输入框和主要按钮样式调整 */
+    /* 设置宽度为 100%，占满容器宽度，适应小屏幕 */
+    .input-field, .btn-primary {
+        width: 100%; /* 宽度占满父容器，覆盖原有 70% 或固定宽度 */
+    }
+
+    /* 选项卡导航容器样式调整 */
+    /* 改为垂直排列，使选项卡按钮逐个显示，适合小屏幕的窄宽度 */
+    .tab-nav {
+        flex-direction: column; /* 从水平排列改为垂直排列 */
+    }
+
+    /* 选项卡按钮样式调整 */
+    /* 确保按钮占满宽度，并添加底部间距以分隔按钮，提升可读性 */
+    .tab-button {
+        width: 100%; /* 按钮宽度占满容器，覆盖原有固定宽度 */
+        margin-bottom: 10px; /* 按钮之间添加 10px 间距，避免拥挤 */
+    }
 }

@@ -11,36 +11,65 @@ headers = {
 }
 
 # 获取视频信息，包括封面图片 URL 和 UP 主信息
+import requests
+import time
+
 def get_video_info(bv):
     app_logger.debug("Fetching video info...")
+
+    # 构造 API 请求 URL，使用 bvid 参数获取视频信息
     url = f'https://api.bilibili.com/x/web-interface/view?bvid={bv}'
 
-    # 更新 Referer 字段为视频页面的 URL
+    # 设置请求头，尤其是 Referer，有助于避免部分反爬机制
     headers['Referer'] = f'https://www.bilibili.com/video/{bv}'
     
     try:
-        res = requests.get(url, headers=headers)  # 使用正确的 url
+        # 发送 GET 请求获取视频数据
+        res = requests.get(url, headers=headers)
         app_logger.debug(f"API Response Status Code: {res.status_code}")
         
         if res.status_code == 200:
-            data = res.json()['data']
-            title = data['title']
-            cover = data['pic']
-            up_name = data['owner']['name']
-            up_link = f'https://space.bilibili.com/{data["owner"]["mid"]}'
+            data = res.json()['data']  # 提取 JSON 数据中 "data" 字段
+            title = data['title']      # 视频标题
+            cover = data['pic']        # 封面图片 URL
+            up_name = data['owner']['name']  # UP主昵称
+            up_link = f'https://space.bilibili.com/{data["owner"]["mid"]}'  # UP主主页链接
+            
+            # 获取视频时长（单位为秒），默认为 0
+            video_duration = data.get('duration', 0)
 
-            # 如果封面图片是 http 开头的，替换为 https
+            # 检查视频时长是否合法，防止无效或为 0 的情况
+            if not isinstance(video_duration, (int, float)) or video_duration <= 0:
+                app_logger.warning(f"Invalid video_duration for BV{bv}: {video_duration}, setting to 60 seconds")
+                video_duration = 60  # 设置默认值 60 秒
+
+            # 如果封面 URL 使用的是 http 协议，替换为 https（更安全）
             if cover.startswith('http://'):
                 cover = cover.replace('http://', 'https://')
 
+            # 打印视频时长（秒）用于调试
+            app_logger.debug(f"Video duration (seconds): {video_duration}")
+
+            # 可选：格式化为可读时间格式，例如 "00:03:25"
+            formatted_duration = time.strftime("%H:%M:%S", time.gmtime(video_duration))
+            app_logger.debug(f"Formatted duration: {formatted_duration}")
+
+            # 下载封面图片（函数需你自己实现）
             cover_path = download_cover_image(cover)
-            return title, cover_path, up_name, up_link
+
+            # 返回视频标题、封面本地路径、UP主昵称、主页链接、时长（秒）、格式化时长
+            return title, cover_path, up_name, up_link, video_duration, formatted_duration
+
         else:
+            # 非200响应时抛出异常
             app_logger.error(f"Failed to fetch video info, Status Code: {res.status_code}")
             raise Exception(f"获取视频信息失败，状态码：{res.status_code}")
+    
     except Exception as e:
+        # 捕获所有异常并记录日志
         app_logger.error(f"Error in get_video_info: {str(e)}")
         raise Exception(f"获取视频信息失败: {e}")
+
 
 
 # 获取视频的 cid

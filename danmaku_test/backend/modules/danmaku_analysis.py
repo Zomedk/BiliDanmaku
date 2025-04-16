@@ -10,6 +10,11 @@ from modules.utils import parse_time_to_seconds
 import numpy as np
 import matplotlib.pyplot as plt  # 新增：绘制折线图
 from matplotlib.font_manager import FontProperties  # 新增：支持中文
+from matplotlib.colors import LinearSegmentedColormap
+import seaborn as sns
+from matplotlib import font_manager
+from scipy.interpolate import make_interp_spline
+from scipy.signal import find_peaks
 
 
 # 定义文件路径常量
@@ -142,73 +147,91 @@ def generate_word_cloud(danmaku_data, logger=None):
     return f'data:image/png;base64,{img_base64}'  # 返回图片数据
 
 
-# 生成弹幕随时间分布折线图
-def generate_danmaku_timeline(danmaku_data, logger=None):
-    """
-    根据弹幕时间生成折线图，并标注关键时刻
-    :param danmaku_data: 弹幕数据列表，包含 'time' 键（可能是字符串或浮点数）
-    :param logger: 日志工具（可选）
-    :return: Base64 编码的折线图图片
-    """
-    if not danmaku_data or not isinstance(danmaku_data, (list, tuple)):
+
+
+
+def generate_danmaku_timeline(danmaku_list, logger=None):
+    try:
+        FONT_PATH = r'C:\Windows\Fonts\simhei.ttf'
+        EMOJI_FONT_PATH = r'C:\Windows\Fonts\seguiemj.ttf'
+
+        # 统计每分钟弹幕数量
+        timeline = {}
+        for danmaku in danmaku_list:
+            time_str = danmaku['time']
+            minutes = int(time_str.split(":")[0]) * 60 + int(time_str.split(":")[1])
+            timeline[minutes] = timeline.get(minutes, 0) + 1
+
+        x = sorted(timeline.keys())
+        y = [timeline[min_] for min_ in x]
+
+        x_new = np.linspace(min(x), max(x), 500)
+        spline = make_interp_spline(x, y, k=3)
+        y_smooth = spline(x_new)
+
+        fig, ax = plt.subplots(figsize=(12, 6))
+        ax.set_facecolor('#fef3f3')
+        fig.patch.set_facecolor('#fef3f3')
+
+        ax.fill_between(x_new, y_smooth, color='#fbc2eb', alpha=0.4)
+        ax.plot(x_new, y_smooth, color='#f67070', linewidth=2.5)
+
+        for spine in ax.spines.values():
+            spine.set_edgecolor('#dddddd')
+            spine.set_linewidth(1.5)
+
+        font_prop = font_manager.FontProperties(fname=FONT_PATH)
+        emoji_font = font_manager.FontProperties(fname=EMOJI_FONT_PATH)
+
+        ax.set_title("弹幕随时间分布图", fontsize=18, fontproperties=font_prop, color='#444')
+        ax.set_xlabel("时间（分钟）", fontsize=14, fontproperties=font_prop, color='#666')
+        ax.set_ylabel("弹幕数量", fontsize=14, fontproperties=font_prop, color='#666')
+
+        ax.tick_params(colors='#999', labelsize=10)
+        ax.grid(alpha=0.3)
+
+        # 计算峰值
+        peaks, _ = find_peaks(y_smooth, distance=30, prominence=2)
+        peak_points = [(x_new[i], y_smooth[i]) for i in peaks]
+
+        # 强制包含最大点
+        max_index = np.argmax(y_smooth)
+        max_point = (x_new[max_index], y_smooth[max_index])
+        if max_point not in peak_points:
+            peak_points.append(max_point)
+
+        # 选择最高的三个
+        top_peaks = sorted(peak_points, key=lambda p: p[1], reverse=True)[:3]
+
+        # 标注关键时刻
+        for x_val, y_val in top_peaks:
+            ax.scatter(x_val, y_val, color='gold', s=150, edgecolors='white', zorder=5)
+            ax.text(x_val + 0.5, y_val + 5, '关键时刻', fontsize=13,
+                    fontproperties=font_prop, color='crimson')
+
+        buf = BytesIO()
+        plt.tight_layout()
+        plt.savefig(buf, format='png', facecolor=fig.get_facecolor())
+        plt.close(fig)
+        buf.seek(0)
+
+        img_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+
         if logger:
-            logger.debug("Danmaku data is empty or invalid for timeline")
-        raise ValueError("未获取到弹幕数据")
+            logger.debug("Danmaku timeline chart with style generated successfully")
 
-    # 提取弹幕时间并转换为秒数
-    times = []
-    for item in danmaku_data:
-        time_value = item.get('time', 0)
-        if isinstance(time_value, str):  # 如果是字符串格式
-            time_in_seconds = parse_time_to_seconds(time_value)
-        else:  # 如果已经是数字
-            time_in_seconds = float(time_value or 0)
-        times.append(time_in_seconds)
+        return f"data:image/png;base64,{img_base64}"
 
-    if not times:
-        raise ValueError("弹幕数据中没有有效的时间信息")
+    except Exception as e:
+        if logger:
+            logger.error(f"生成时间分布图失败: {str(e)}")
+        raise e
 
-    # 将时间按分钟分组
-    max_time = max(times)  # 视频总时长（秒）
-    bins = int(max_time // 60) + 1  # 按分钟划分，总分钟数
-    hist, bin_edges = np.histogram(times, bins=bins, range=(0, max_time))  # 统计每分钟弹幕数
 
-    # 生成时间轴（分钟）
-    minutes = [i for i in range(bins)]
 
-    # 找到弹幕峰值（关键时刻）
-    peak_indices = np.where(hist >= np.percentile(hist, 95))[0]  # 取前 5% 的峰值
-    peaks = [(minutes[i], hist[i]) for i in peak_indices]  # (分钟, 弹幕数)
 
-    # 设置中文字体
-    font = FontProperties(fname=FONT_PATH, size=12)
 
-    # 创建折线图
-    plt.figure(figsize=(10, 6))
-    plt.plot(minutes, hist, color='#1f77b4', linewidth=2, label='弹幕数量')
-    plt.fill_between(minutes, hist, color='#1f77b4', alpha=0.2)
 
-    # 标注关键时刻
-    for peak_min, peak_count in peaks:
-        plt.scatter(peak_min, peak_count, color='red', s=50, zorder=5)
-        plt.text(peak_min, peak_count + 5, f'关键时刻\n{int(peak_min)}分', 
-                 ha='center', va='bottom', fontproperties=font, color='red')
 
-    # 设置图表样式
-    plt.title('弹幕随时间分布', fontproperties=font, size=16)
-    plt.xlabel('时间 (分钟)', fontproperties=font)
-    plt.ylabel('弹幕数量', fontproperties=font)
-    plt.grid(True, linestyle='--', alpha=0.7)
-    plt.legend(prop=font)
 
-    # 保存图片到内存
-    img_io = BytesIO()
-    plt.savefig(img_io, format='PNG', bbox_inches='tight', dpi=100)
-    img_io.seek(0)
-    img_base64 = base64.b64encode(img_io.getvalue()).decode('utf-8')
-    plt.close()
-
-    if logger:
-        logger.debug("Danmaku timeline image generated successfully")
-    
-    return f'data:image/png;base64,{img_base64}'
+        

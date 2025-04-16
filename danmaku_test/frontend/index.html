@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>B站视频分析工具</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <div id="app">
+        <header class="page-header">基于Python的哔哩哔哩弹幕量化分析可视化系统</header>
         <div class="container">
             <h1>B站视频分析工具</h1>
 
@@ -163,7 +165,6 @@
                     </div>
                 </div>
             </div>
-            
 
             <!-- 加载状态 -->
             <div v-if="isLoading" class="loading">数据加载中，请稍候...</div>
