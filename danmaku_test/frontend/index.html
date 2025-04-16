@@ -128,7 +128,8 @@
                     <p>更多功能（观众IP属地统计，情感分析等）敬请期待。</p>
                 </div>
 
-                <!-- 新增选项卡内容 -->
+                <!-- 情感分析 -->
+                <!-- 情感分析 -->
                 <div v-show="activeTab === 'sentiment'" class="tab-pane">
                     <div class="input-group">
                         <button @click="fetchSentiment" class="btn-primary" :disabled="isLoading">
@@ -139,42 +140,20 @@
                     <div v-if="sentimentData">
                         <!-- 情感分布统计 -->
                         <div class="sentiment-stats">
-                            <p>积极: {{ sentimentData.counts.positive || 0 }} ({{ (sentimentData.counts.positive / (sentimentData.counts.positive + sentimentData.counts.negative + sentimentData.counts.neutral) * 100).toFixed(1) }}%)</p>
-                            <p>消极: {{ sentimentData.counts.negative || 0 }} ({{ (sentimentData.counts.negative / (sentimentData.counts.positive + sentimentData.counts.negative + sentimentData.counts.neutral) * 100).toFixed(1) }}%)</p>
-                            <p>中性: {{ sentimentData.counts.neutral || 0 }} ({{ (sentimentData.counts.neutral / (sentimentData.counts.positive + sentimentData.counts.negative + sentimentData.counts.neutral) * 100).toFixed(1) }}%)</p>
+                            <p>积极: {{ sentimentData.counts.positive || 0 }} ({{ sentimentData.percentages.positive.toFixed(1) }}%)</p>
+                            <p>消极: {{ sentimentData.counts.negative || 0 }} ({{ sentimentData.percentages.negative.toFixed(1) }}%)</p>
+                            <p>中性: {{ sentimentData.counts.neutral || 0 }} ({{ sentimentData.percentages.neutral.toFixed(1) }}%)</p>
                         </div>
                 
                         <!-- 情感分布图表 -->
                         <div class="chart-container">
                             <img :src="sentimentData.chart" alt="情感分析图表" class="analysis-chart" @error="onChartError">
                         </div>
-                
-                        <!-- 情感关键词 -->
-                        <div class="word-lists">
-                            <div class="word-list">
-                                <h4>积极关键词 TOP10</h4>
-                                <ul>
-                                    <li v-for="(word, index) in sentimentData.positive_words" :key="'pos'+index">
-                                        {{ word[0] }} ({{ word[1] }}次)
-                                    </li>
-                                    <li v-if="!sentimentData.positive_words.length">无积极关键词</li>
-                                </ul>
-                            </div>
-                            
-                            <div class="word-list">
-                                <h4>消极关键词 TOP10</h4>
-                                <ul>
-                                    <li v-for="(word, index) in sentimentData.negative_words" :key="'neg'+index">
-                                        {{ word[0] }} ({{ word[1] }}次)
-                                    </li>
-                                    <li v-if="!sentimentData.negative_words.length">无消极关键词</li>
-                                </ul>
-                            </div>
-                        </div>
                     </div>
                     <div v-else class="no-data">
                         <p>暂无情感分析结果，请点击“执行情感分析”</p>
                     </div>
+                </div>
                 </div>
             </div>
 

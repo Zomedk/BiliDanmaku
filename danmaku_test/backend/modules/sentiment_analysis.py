@@ -1,15 +1,18 @@
-import paddlehub as hub
+import matplotlib
+matplotlib.use('Agg')  # 使用 Agg 后端，避免 Tkinter 主循环问题
+
 import matplotlib.pyplot as plt
 import base64
 import jieba
 import io
+import csv
 from collections import defaultdict
 from matplotlib.font_manager import FontProperties
-import numpy as np
+from snownlp import SnowNLP
 from modules.logger import app_logger
 
 # 加载停用词表
-def load_stopwords(file_path='stopwords.txt'):
+def load_stopwords(file_path='stopwords_cn.txt'):
     """加载停用词表"""
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -20,14 +23,35 @@ def load_stopwords(file_path='stopwords.txt'):
 
 stopwords = load_stopwords()
 
-# 初始化情感分析模型
-senta = None
-try:
-    senta = hub.Module(name="senta_bilstm")
-    app_logger.info("情感分析模型加载成功")
-except Exception as e:
-    app_logger.error(f"情感分析模型加载失败: {str(e)}")
-    raise RuntimeError("无法加载情感分析模型，请检查网络或环境配置")
+# 加载情感词典
+def load_sentiment_lexicon(file_path='hownetvsa.csv'):
+    """加载情感词典，假设格式为 word,score"""
+    lexicon = {}
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if len(row) >= 2:  # 确保至少有词和分数
+                    word = row[0]
+                    score = float(row[1])
+                    lexicon[word] = score
+    except FileNotFoundError:
+        app_logger.warning(f"Sentiment lexicon file {file_path} not found, using empty dict")
+        return {}
+    return lexicon
+
+sentiment_lexicon = load_sentiment_lexicon()
+
+# 计算词频，过滤情感词
+def calculate_word_frequency(words, sentiment_lexicon, stopwords, sentiment_type, top_n=10, threshold=0.5):
+    """统计词语频率，过滤停用词、单字和非情感词"""
+    freq = defaultdict(int)
+    for word in words:
+        if len(word) > 1 and word not in stopwords and word in sentiment_lexicon:
+            score = sentiment_lexicon[word]
+            if (sentiment_type == 'positive' and score > threshold) or (sentiment_type == 'negative' and score < -threshold):
+                freq[word] += 1
+    return sorted(freq.items(), key=lambda x: x[1], reverse=True)[:top_n]
 
 def analyze_sentiment(danmaku_list):
     """执行情感分析并生成可视化图表"""
@@ -44,38 +68,34 @@ def analyze_sentiment(danmaku_list):
         app_logger.debug(f"Processing {len(texts)} danmaku texts for sentiment analysis")
 
         # 执行情感分析
-        if not senta:
-            raise RuntimeError("情感分析模型未加载")
-        results = senta.sentiment_classify(texts=texts)
-
-        # 统计情感分布
         sentiment_counts = defaultdict(int)
         positive_words = []
         negative_words = []
         
-        for result in results:
-            positive_prob = result['positive_probs']
-            negative_prob = result['negative_probs']
-            # 动态分类：选择概率最高的类别
-            if positive_prob > negative_prob and positive_prob >= 0.5:
+        for text in texts:
+            s = SnowNLP(text)
+            score = s.sentiments
+            if score > 0.6:
                 label = "positive"
-            elif negative_prob > positive_prob and negative_prob >= 0.5:
+                positive_words.extend(jieba.lcut(text, cut_all=False))
+            elif score < 0.4:
                 label = "negative"
+                negative_words.extend(jieba.lcut(text, cut_all=False))
             else:
                 label = "neutral"
             sentiment_counts[label] += 1
-            
-            # 收集高频情感词
-            if label != "neutral":
-                words = jieba.lcut(result['text'], cut_all=False)
-                if label == "positive":
-                    positive_words.extend(words)
-                else:
-                    negative_words.extend(words)
 
         # 验证情感分布
         if not sentiment_counts:
             raise ValueError("情感分析结果为空")
+
+        # 计算百分比
+        total = sum(sentiment_counts.values())
+        percentages = {
+            "positive": (sentiment_counts.get('positive', 0) / total * 100) if total > 0 else 0,
+            "negative": (sentiment_counts.get('negative', 0) / total * 100) if total > 0 else 0,
+            "neutral": (sentiment_counts.get('neutral', 0) / total * 100) if total > 0 else 0
+        }
 
         # 设置中文字体
         font_path = r'C:\Windows\Fonts\simhei.ttf'  # 使用 SimHei 字体
@@ -83,10 +103,10 @@ def analyze_sentiment(danmaku_list):
 
         # 生成图表
         plt.figure(figsize=(12, 5))
-        labels = ['积极', '消极', '中性']  # 更简洁的标签
+        labels = ['积极', '消极', '中性']
         sizes = [sentiment_counts.get('positive', 0), sentiment_counts.get('negative', 0), sentiment_counts.get('neutral', 0)]
-        colors = ['#1f77b4', '#ff7f0e', '#2ca02c']  # 蓝色、橙色、绿色
-        explode = (0.05, 0, 0)  # 突出积极部分
+        colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+        explode = (0.05, 0, 0)
 
         # 饼图
         plt.subplot(1, 2, 1)
@@ -119,13 +139,14 @@ def analyze_sentiment(danmaku_list):
         plt.close()
 
         # 计算高频词
-        positive_freq = calculate_word_frequency(positive_words)
-        negative_freq = calculate_word_frequency(negative_words)
+        positive_freq = calculate_word_frequency(positive_words, sentiment_lexicon, stopwords, 'positive')
+        negative_freq = calculate_word_frequency(negative_words, sentiment_lexicon, stopwords, 'negative')
 
         app_logger.debug(f"Sentiment analysis completed: {dict(sentiment_counts)}")
 
         return {
             "counts": dict(sentiment_counts),
+            "percentages": percentages,
             "chart": f"data:image/png;base64,{img_base64}",
             "positive_words": positive_freq,
             "negative_words": negative_freq
@@ -134,11 +155,3 @@ def analyze_sentiment(danmaku_list):
     except Exception as e:
         app_logger.error(f"情感分析失败: {str(e)}")
         raise
-
-def calculate_word_frequency(words, top_n=10):
-    """统计词语频率，过滤停用词和单字"""
-    freq = defaultdict(int)
-    for word in words:
-        if len(word) > 1 and word not in stopwords:  # 过滤单字和停用词
-            freq[word] += 1
-    return sorted(freq.items(), key=lambda x: x[1], reverse=True)[:top_n]
