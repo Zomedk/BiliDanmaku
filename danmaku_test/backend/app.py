@@ -7,6 +7,7 @@ from modules.utils import handle_bv_input
 from modules.logger import app_logger
 from modules.danmaku_analysis import calculate_word_frequency, generate_word_cloud, generate_danmaku_timeline, generate_danmaku_time_proportion
 from modules.sentiment_analysis import analyze_sentiment
+import datetime
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": ["http://127.0.0.1:5000", "http://127.0.0.1:8000", "*"]}})
@@ -51,7 +52,9 @@ def danmaku():
     page = data.get('page', 1)
     per_page = data.get('per_page', 50)
     keyword = data.get('keyword', '').strip()
-    app_logger.debug(f"Received request for danmaku: BV={bv_input}, page={page}, per_page={per_page}, keyword='{keyword}'")
+    sort_by = data.get('sort_by', 'time')
+    sort_order = data.get('sort_order', 'asc')
+    app_logger.debug(f"Received request for danmaku: BV={bv_input}, page={page}, per_page={per_page}, keyword='{keyword}', sort_by={sort_by}, sort_order={sort_order}")
     
     try:
         if not bv_input:
@@ -60,6 +63,10 @@ def danmaku():
             raise ValueError("页码必须是正整数")
         if not isinstance(per_page, int) or per_page < 1:
             raise ValueError("每页条数必须是正整数")
+        if sort_by not in ['time', 'send_time']:
+            raise ValueError("sort_by 必须是 'time' 或 'send_time'")
+        if sort_order not in ['asc', 'desc']:
+            raise ValueError("sort_order 必须是 'asc' 或 'desc'")
 
         bv = handle_bv_input(bv_input)
         app_logger.debug(f"Parsed BV: {bv}")
@@ -77,6 +84,9 @@ def danmaku():
             if not isinstance(d, dict):
                 app_logger.error(f"Invalid danmaku item {i}: type={type(d)}, value={d}")
                 raise ValueError(f"弹幕数据元素格式错误: 期望字典，实际为 {type(d)}")
+            if 'time' not in d or 'send_time' not in d or 'hash' not in d or 'content' not in d:
+                app_logger.error(f"Missing required keys in danmaku item {i}: {d}")
+                raise ValueError(f"弹幕数据缺少必要字段: {d}")
         
         filtered_danmaku = []
         if keyword:
@@ -85,12 +95,36 @@ def danmaku():
                     app_logger.error(f"Invalid danmaku item in filter: type={type(d)}, value={d}")
                     continue
                 content = str(d.get('content', ''))
-                if keyword in content:
+                if keyword.lower() in content.lower():
                     filtered_danmaku.append(d)
             app_logger.debug(f"Filtered danmaku count with keyword '{keyword}': {len(filtered_danmaku)}")
         else:
             filtered_danmaku = danmaku_data
             app_logger.debug(f"Total danmaku count (no keyword): {len(filtered_danmaku)}")
+
+        # 排序
+        def get_time_sort_key(d):
+            try:
+                if sort_by == 'time':
+                    time_str = d.get('time', '00:00:00')
+                    if not isinstance(time_str, str) or not time_str:
+                        app_logger.warning(f"Invalid time format: {time_str}")
+                        return 0
+                    h, m, s = map(int, time_str.split(':'))
+                    return h * 3600 + m * 60 + s
+                else:  # send_time
+                    send_time_str = d.get('send_time', '1970-01-01 00:00:00')
+                    if not isinstance(send_time_str, str) or not send_time_str:
+                        app_logger.warning(f"Invalid send_time format: {send_time_str}")
+                        return 0
+                    return datetime.datetime.strptime(send_time_str, '%Y-%m-%d %H:%M:%S').timestamp()
+            except Exception as e:
+                app_logger.warning(f"Sort key error for danmaku: {d}, error: {str(e)}")
+                return 0
+
+        app_logger.debug(f"Before sorting (first 5): {[d.get(sort_by) for d in filtered_danmaku[:5]]}")
+        filtered_danmaku.sort(key=get_time_sort_key, reverse=(sort_order == 'desc'))
+        app_logger.debug(f"After sorting (first 5): {[d.get(sort_by) for d in filtered_danmaku[:5]]}")
 
         total_items = len(filtered_danmaku)
         total_pages = (total_items + per_page - 1) // per_page if total_items > 0 else 1
@@ -108,6 +142,7 @@ def danmaku():
     except Exception as e:
         app_logger.error(f"Error fetching danmaku: {str(e)}")
         return jsonify({'error': str(e)}), 400
+    
 
 @app.route('/api/word_frequency', methods=['POST'])
 def word_frequency():

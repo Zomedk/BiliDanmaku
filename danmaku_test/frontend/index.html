@@ -49,38 +49,56 @@
                     </div>
                 </div>
 
-                <!-- 弹幕列表 -->
-                <div v-show="activeTab === 'danmaku'" class="tab-pane">
-                    <div class="input-group">
-                        <button @click="fetchDanmaku" class="btn-primary" :disabled="isLoading">
-                            {{ isLoading ? '加载中...' : '查询弹幕' }}
-                        </button>
-                    </div>
-                    <div class="input-group">
-                        <input v-model="searchKeyword" placeholder="请输入关键字搜索弹幕" class="input-field">
-                        <button @click="fetchDanmaku" class="btn-primary" :disabled="isLoading">
-                            {{ isLoading ? '搜索中...' : '搜索' }}
-                        </button>
-                    </div>
-                    <div v-if="danmakuData.length > 0" class="danmaku-list">
-                        <h3>{{ searchKeyword ? '搜索结果' : '弹幕列表' }}</h3>
-                        <table class="danmaku-table">
-                            <thead><tr><th>发送时间</th><th>发送者哈希值</th><th>内容</th></tr></thead>
-                            <tbody>
-                                <tr v-for="d in danmakuData" :key="`${d.time}-${d.hash}-${d.content}`">
-                                    <td>{{ d.time }}</td><td>{{ d.hash }}</td><td>{{ d.content }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div class="pagination">
-                            <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1 || isLoading">上一页</button>
-                            <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
-                            <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages || isLoading">下一页</button>
-                        </div>
-                    </div>
-                    <div v-else-if="searchKeyword"><p>没有找到包含“{{ searchKeyword }}”的弹幕。</p></div>
-                    <div v-else><p>暂无弹幕数据，点击“查询弹幕”按钮获取。</p></div>
+            <!-- 弹幕列表 -->
+            <div v-show="activeTab === 'danmaku'" class="tab-pane">
+                <div class="input-group">
+                    <button @click="fetchDanmaku" class="btn-primary" :disabled="isLoading">
+                        {{ isLoading ? '加载中...' : '查询弹幕' }}
+                    </button>
                 </div>
+                <div class="input-group">
+                    <input v-model="searchKeyword" placeholder="请输入关键字搜索弹幕" class="input-field">
+                    <button @click="fetchDanmaku" class="btn-primary" :disabled="isLoading">
+                        {{ isLoading ? '搜索中...' : '搜索' }}
+                    </button>
+                </div>
+                <div v-if="danmakuData.length > 0" class="danmaku-list">
+                    <h3>{{ searchKeyword ? '搜索结果' : '弹幕列表' }}</h3>
+                    <table class="danmaku-table">
+                        <thead>
+                            <tr>
+                                <th @click="sortBy('time')" :class="{ 'sorting': sortBy === 'time' }">
+                                    弹幕时间
+                                    <span v-if="sortBy === 'time'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                                </th>
+                                <th @click="sortBy('send_time')" :class="{ 'sorting': sortBy === 'send_time' }">
+                                    发送时间
+                                    <span v-if="sortBy === 'send_time'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                                </th>
+                                <th>发送者哈希值</th>
+                                <th>内容</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="d in danmakuData" :key="`${d.time}-${d.send_time}-${d.hash}-${d.content}`">
+                                <td>{{ d.time }}</td>
+                                <td>{{ d.send_time }}</td>
+                                <td>{{ d.hash }}</td>
+                                <td>{{ d.content }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="pagination">
+                        <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1 || isLoading">上一页</button>
+                        <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
+                        <input v-model.number="pageInput" type="number" min="1" :max="totalPages" class="page-input" placeholder="页码">
+                        <button @click="jumpToPage" :disabled="!pageInput || pageInput < 1 || pageInput > totalPages || isLoading">跳转</button>
+                        <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages || isLoading">下一页</button>
+                    </div>
+                </div>
+                <div v-else-if="searchKeyword"><p>没有找到包含“{{ searchKeyword }}”的弹幕。</p></div>
+                <div v-else><p>暂无弹幕数据，点击“查询弹幕”按钮获取。</p></div>
+            </div>
 
                 <!-- 词频统计 -->
                 <div v-show="activeTab === 'word-frequency'" class="tab-pane">

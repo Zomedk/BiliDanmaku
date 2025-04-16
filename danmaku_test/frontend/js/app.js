@@ -15,6 +15,9 @@ new Vue({
         activeTab: 'video-info',
         searchKeyword: '',
         sentimentData: null,
+        sortBy: 'time',
+        sortOrder: 'asc',
+        pageInput: null,
         tabs: [
             { id: 'video-info', name: '视频信息' },
             { id: 'danmaku', name: '弹幕列表' },
@@ -55,8 +58,9 @@ new Vue({
             });
         },
         fetchDanmaku() {
+            if (this.isLoading) return;
             this.isLoading = true;
-            console.log("Fetching danmaku for BV:", this.bvInput);
+            console.log("Fetching danmaku for BV:", this.bvInput, "Sort:", this.sortBy, this.sortOrder, "Page:", this.currentPage);
             fetch('http://127.0.0.1:5000/api/danmaku', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -64,27 +68,64 @@ new Vue({
                     bv: this.bvInput,
                     page: this.currentPage,
                     per_page: this.itemsPerPage,
-                    keyword: this.searchKeyword
+                    keyword: this.searchKeyword,
+                    sort_by: this.sortBy,
+                    sort_order: this.sortOrder
                 })
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                return res.json();
+            })
             .then(data => {
+                console.log("Received danmaku:", data.danmaku.slice(0, 5));
                 if (data.error) {
                     alert(`获取弹幕失败：${data.error}`);
+                    this.danmakuData = [];
                 } else {
-                    console.log("Received danmaku:", data.danmaku.slice(0, 5));
-                    Vue.set(this, 'danmakuData', data.danmaku);
+                    this.danmakuData = data.danmaku || [];
                     this.totalPages = data.total_pages || 1;
-                    this.currentPage = data.current_page;
+                    this.currentPage = data.current_page || 1;
                 }
             })
             .catch(error => {
                 alert(`获取弹幕失败: ${error.message}`);
                 console.error('Error:', error);
+                this.danmakuData = [];
             })
             .finally(() => {
                 this.isLoading = false;
             });
+        },
+        changePage(page) {
+            if (page >= 1 && page <= this.totalPages) {
+                this.currentPage = page;
+                this.pageInput = page;
+                this.fetchDanmaku();
+            }
+        },
+        jumpToPage() {
+            const page = parseInt(this.pageInput);
+            if (!isNaN(page) && page >= 1 && page <= this.totalPages) {
+                this.currentPage = page;
+                this.fetchDanmaku();
+            } else {
+                alert(`请输入 1 到 ${this.totalPages} 之间的页码`);
+                this.pageInput = null;
+            }
+        },
+        sortBy(column) {
+            if (this.isLoading) return;
+            console.log("Sorting by:", column);
+            if (this.sortBy === column) {
+                this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                this.sortBy = column;
+                this.sortOrder = 'asc';
+            }
+            this.currentPage = 1;
+            this.pageInput = 1;
+            this.fetchDanmaku();
         },
         async fetchWordFrequency() {
             try {
