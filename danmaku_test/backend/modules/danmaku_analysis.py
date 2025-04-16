@@ -192,7 +192,6 @@ def generate_danmaku_time_proportion(danmaku_list, logger=None):
             
             send_time = d.get('send_time', '1970-01-01 00:00:00')
             try:
-                # 从 send_time 提取小时（YYYY-MM-DD HH:MM:SS）
                 hour = int(send_time.split(' ')[1].split(':')[0]) % 24
                 hours.append(hour)
             except (ValueError, IndexError) as e:
@@ -212,58 +211,74 @@ def generate_danmaku_time_proportion(danmaku_list, logger=None):
             app_logger.error("弹幕数量总和为 0")
             raise ValueError("弹幕数量总和为 0")
 
-        # 自定义哔哩哔哩风格调色板
+        # 合并小占比（<1%）为“其他”
+        threshold = total * 0.01
+        other_size = 0
+        filtered_labels = []
+        filtered_sizes = []
+        for label, size in zip(labels, sizes):
+            if size < threshold:
+                other_size += size
+            else:
+                filtered_labels.append(label)
+                filtered_sizes.append(size)
+        if other_size > 0:
+            filtered_labels.append("其他")
+            filtered_sizes.append(other_size)
+
+        # 创建画布
+        fig, ax = plt.subplots(figsize=(6, 6), dpi=150)
+        fig.patch.set_facecolor('#E8ECEF')
+        ax.set_facecolor('none')
+
+        # 高对比颜色
         colors = [
             '#FF6699', '#00A1D6', '#9966FF', '#FFCC33', '#66CC99',
             '#FF99CC', '#33B5E5', '#CC99FF', '#FFD700', '#99FF99',
             '#FF6666', '#3399FF', '#CC66CC', '#FFAA33', '#66CCCC',
             '#FF99AA', '#66B3FF', '#AA66CC', '#FFCC66', '#99CCCC',
-            '#FF3366', '#0066CC', '#9933CC', '#FF9933'
+            '#FF3366', '#0066CC', '#9933CC', '#CCCCCC'  # 最后为“其他”
         ]
-
-        # 创建画布
-        fig, ax = plt.subplots(figsize=(8, 8), dpi=100)
-        fig.patch.set_facecolor('#F5F5F5')  # 浅灰背景，高级感
-        ax.set_facecolor('none')
 
         # 绘制甜甜圈图
         wedges, texts, autotexts = ax.pie(
-            sizes,
-            labels=labels,
-            colors=colors[:24],
-            startangle=90,  # 从 12 点开始，顺时针
+            filtered_sizes,
+            labels=filtered_labels,
+            colors=colors[:len(filtered_sizes)],
+            startangle=90,
             counterclock=False,
-            wedgeprops={'width': 0.4, 'edgecolor': 'white', 'linewidth': 1.5, 'antialiased': True},
-            textprops={'fontproperties': FontProperties(fname=FONT_PATH), 'fontsize': 10, 'color': '#333333'},
-            autopct=lambda p: f'{p:.1f}%' if p > 2 else '',  # 仅显示 >2% 的百分比
-            pctdistance=0.85
+            wedgeprops={'width': 0.4, 'edgecolor': 'white', 'linewidth': 2.5, 'antialiased': True},
+            textprops={'fontproperties': FontProperties(fname=r'C:\Windows\Fonts\simhei.ttf'), 'fontsize': 12, 'color': '#1A1A1A'},
+            autopct=lambda p: f'{p:.1f}%' if p > 2 else '',
+            pctdistance=0.82,
         )
 
-        # 美化百分比标签
+        # 美化标签
+        for text in texts:
+            text.set_fontproperties(FontProperties(fname=r'C:\Windows\Fonts\simhei.ttf'))
+            text.set_fontsize(12)
         for autotext in autotexts:
-            autotext.set_fontproperties(FontProperties(fname=FONT_PATH))
-            autotext.set_fontsize(8)
+            autotext.set_fontproperties(FontProperties(fname=r'C:\Windows\Fonts\simhei.ttf'))
+            autotext.set_fontsize(10)
             autotext.set_color('white')
             autotext.set_weight('bold')
 
-        # 添加中心白色圆形
+        # 中心圆
         centre_circle = plt.Circle((0, 0), 0.6, fc='white')
         ax.add_artist(centre_circle)
 
-        # 设置标题
-        font_prop = FontProperties(fname=FONT_PATH)
-        plt.title("弹幕发送时间分布（按小时）", fontsize=16, fontproperties=font_prop, color='#333333', pad=20)
+        # 标题
+        plt.title("弹幕发送时间分布", fontsize=18, fontproperties=FontProperties(fname=r'C:\Windows\Fonts\simhei.ttf'), color='#1A1A1A', pad=25)
 
-        # 调整布局
-        plt.tight_layout()
+        # 居中调整
+        plt.subplots_adjust(left=0.15, right=0.85, top=0.85, bottom=0.15)
 
-        # 保存到内存
+        # 保存
         buf = BytesIO()
-        plt.savefig(buf, format='png', bbox_inches='tight', transparent=False, dpi=100)
+        plt.savefig(buf, format='png', dpi=150, facecolor=fig.get_facecolor())
         plt.close(fig)
         buf.seek(0)
 
-        # 转换为 Base64
         img_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
         app_logger.debug("Danmaku time proportion donut chart generated successfully")
         return f"data:image/png;base64,{img_base64}"

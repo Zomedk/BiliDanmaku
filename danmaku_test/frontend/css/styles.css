@@ -395,5 +395,36 @@ a:hover {
         margin-bottom: 10px; /* 按钮之间添加 10px 间距，避免拥挤 */
     }
 
-    
+    /* 现有样式（假设） */
+    .tab-pane {
+        margin-top: 20px;
+    }
+    .input-group {
+        margin-bottom: 20px;
+    }
+    .btn-primary {
+        background-color: #00A1D6;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+    }
+    .btn-primary:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
+
+    /* 新增居中样式 */
+    .time-proportion-container {
+        text-align: center;
+        margin: 0 auto;
+        width: 100%;
+    }
+    .time-proportion-image {
+        display: block;
+        margin: 0 auto;
+        max-width: 600px;
+        width: 100%;
+    }
+
 }
