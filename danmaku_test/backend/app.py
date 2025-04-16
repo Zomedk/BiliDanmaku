@@ -61,37 +61,60 @@ def danmaku():
     bv_input = data.get('bv', '')  # 获取 BV 号
     page = data.get('page', 1)  # 获取页码，默认第 1 页
     per_page = data.get('per_page', 50)  # 每页条数，默认 50
-    keyword = data.get('keyword', '')  # 获取搜索关键字，默认空字符串
-    app_logger.debug(f"Received request for danmaku: BV={bv_input}, page={page}, per_page={per_page}, keyword={keyword}")
+    keyword = data.get('keyword', '').strip()  # 获取搜索关键字，默认空字符串，去除首尾空格
+    app_logger.debug(f"Received request for danmaku: BV={bv_input}, page={page}, per_page={per_page}, keyword='{keyword}'")
+    
     try:
+        # 验证输入
+        if not bv_input:
+            raise ValueError("BV 号不能为空")
+        if not isinstance(page, int) or page < 1:
+            raise ValueError("页码必须是正整数")
+        if not isinstance(per_page, int) or per_page < 1:
+            raise ValueError("每页条数必须是正整数")
+
         bv = handle_bv_input(bv_input)  # 格式化 BV 号
         cid = get_video_cid(bv)  # 获取视频的 CID
         danmaku_data = fetch_danmaku(cid)  # 获取所有弹幕数据
-        if isinstance(danmaku_data, dict):  # 如果返回的是字典
-            danmaku_data = danmaku_data.get('danmaku_list', [])  # 提取弹幕列表
-        if not danmaku_data:  # 如果没有数据
-            raise Exception("未获取到弹幕数据")
-
-        # 根据关键字过滤弹幕（忽略大小写）
-        if keyword:  # 如果提供了关键字
-            filtered_danmaku = [d for d in danmaku_data if keyword.lower() in d.get('content', '').lower()]
+        
+        # 统一弹幕数据格式
+        if isinstance(danmaku_data, dict):
+            danmaku_data = danmaku_data.get('danmaku_list', [])
+        if not isinstance(danmaku_data, (list, tuple)):
+            raise ValueError("弹幕数据格式错误")
+        if not danmaku_data:
+            raise ValueError("未获取到弹幕数据")
+        
+        app_logger.debug(f"Total danmaku fetched: {len(danmaku_data)}")
+        
+        # 根据关键字过滤弹幕
+        if keyword:
+            filtered_danmaku = []
+            for d in danmaku_data:
+                content = str(d.get('content', ''))  # 强制转换为字符串
+                if keyword in content:  # 直接匹配，保留原始大小写
+                    filtered_danmaku.append(d)
             app_logger.debug(f"Filtered danmaku count with keyword '{keyword}': {len(filtered_danmaku)}")
-        else:  # 如果关键字为空，返回全部弹幕
+            if not filtered_danmaku:
+                app_logger.warning(f"No danmaku matched keyword '{keyword}', sample contents: {[d.get('content', '')[:20] for d in danmaku_data[:5]]}")
+        else:
             filtered_danmaku = danmaku_data
-            app_logger.debug(f"Total danmaku count: {len(filtered_danmaku)}")
+            app_logger.debug(f"Total danmaku count (no keyword): {len(filtered_danmaku)}")
 
         # 分页处理
-        total_items = len(filtered_danmaku)  # 过滤后的总条数
-        total_pages = (total_items + per_page - 1) // per_page  # 计算总页数
-        start = (page - 1) * per_page  # 计算起始位置
-        end = start + per_page  # 计算结束位置
-        paginated_danmaku = filtered_danmaku[start:end]  # 分页后的弹幕数据
+        total_items = len(filtered_danmaku)
+        total_pages = (total_items + per_page - 1) // per_page if total_items > 0 else 1
+        start = (page - 1) * per_page
+        end = start + per_page
+        paginated_danmaku = filtered_danmaku[start:end]
 
-        return jsonify({  # 返回分页结果
+        return jsonify({
             'danmaku': paginated_danmaku,
             'total_pages': total_pages,
-            'current_page': page
+            'current_page': page,
+            'total_items': total_items
         })
+    
     except Exception as e:
         app_logger.error(f"Error fetching danmaku: {str(e)}")
         return jsonify({'error': str(e)}), 400
@@ -173,7 +196,6 @@ def danmaku_timeline():
         app_logger.error(f"Error in danmaku timeline generation: {str(e)}")
         return jsonify({'error': f"时间分布图生成失败: {str(e)}"}), 400
 
-# 新增路由
 @app.route('/api/sentiment', methods=['POST'])
 def sentiment_analysis():
     """处理情感分析请求"""

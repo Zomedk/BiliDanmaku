@@ -24,6 +24,10 @@ new Vue({
         ]
     },
     methods: {
+        onChartError() {
+            alert('情感分析图表加载失败');
+            this.sentimentData = null;
+        },
         fetchVideoInfo() {
             this.isLoading = true;
             console.log("Fetching video info for BV:", this.bvInput);
@@ -143,19 +147,33 @@ new Vue({
             }
         },
         async fetchSentiment() {
+            /**
+             * 执行情感分析
+             * 调用后端 /api/sentiment，传递 BV 号
+             * 更新 sentimentData 显示图表和关键词
+             */
             try {
                 this.isLoading = true;
+                console.log("Fetching sentiment analysis for BV:", this.bvInput);
                 const response = await axios.post('http://127.0.0.1:5000/api/sentiment', {
                     bv: this.bvInput
                 });
-                this.sentimentData = response.data;
+                if (response.data.counts && response.data.chart) {
+                    this.sentimentData = response.data;
+                    console.log("Sentiment analysis data:", this.sentimentData);
+                } else {
+                    this.sentimentData = null;
+                    alert('情感分析结果无效或无数据');
+                }
             } catch (error) {
-                console.error('情感分析失败:', error);
-                alert(`情感分析失败: ${error.response?.data?.error || error.message}`);
+                console.error('情感分析失败:', error.response ? error.response.data : error);
+                this.sentimentData = null;
+                alert(`情感分析失败: ${error.response ? error.response.data.error : error.message}`);
             } finally {
                 this.isLoading = false;
             }
         },
+        
         changePage(page) {
             if (page < 1 || page > this.totalPages) {
                 alert(`页码超出范围（1-${this.totalPages}）`);
