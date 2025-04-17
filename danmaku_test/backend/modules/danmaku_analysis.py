@@ -13,6 +13,8 @@ from scipy.interpolate import make_interp_spline  # 用于平滑曲线
 from scipy.signal import find_peaks  # 用于查找数据峰值
 from modules.logger import app_logger  # 引入日志模块，方便调试和记录错误
 
+
+
 # 停用词文件路径
 STOPWORDS_PATH = r'D:\Lernen\danmaku_test\danmaku_test\backend\stopwords_cn.txt'
 # 字体文件路径
@@ -112,10 +114,12 @@ def generate_word_cloud(danmaku_data, logger=None):
         logger.debug("Word cloud image generated successfully")
     return f'data:image/png;base64,{img_base64}'  # 返回 base64 格式的图片
 
+
+
 def generate_danmaku_timeline(danmaku_list, logger=None):
     try:
-        # 定义字体路径，用于支持中文和表情符号显示
-        FONT_PATH = r'C:\Windows\Fonts\simhei.ttf'  # 中文字体
+        # 定义字体路径，使用 Noto Sans SC 支持中文
+        FONT_PATH = r'C:\Users\zzzwww\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'  # 替换为 Noto Sans SC
         EMOJI_FONT_PATH = r'C:\Windows\Fonts\seguiemj.ttf'  # 表情符号字体
 
         # 检查输入数据是否为列表
@@ -140,43 +144,44 @@ def generate_danmaku_timeline(danmaku_list, logger=None):
         y = [timeline[min_] for min_ in x]
 
         # 创建画布和坐标轴，设置尺寸为12x6
-        fig, ax = plt.subplots(figsize=(9, 6))
+        fig, ax = plt.subplots(figsize=(12, 6))
         # 设置坐标轴和画布背景色
-        ax.set_facecolor('#fef3f3')
-        fig.patch.set_facecolor('#fef3f3')
+        ax.set_facecolor('#e0f7fa')  # 浅蓝色背景
+        fig.patch.set_facecolor('#e0f7fa')  # 统一背景
 
         # 检查数据点数量
         if len(x) < 4:
             # 数据点不足，使用简单折线图
             if logger:
                 logger.warning(f"数据点不足（{len(x)}），使用简单折线图")
-            ax.plot(x, y, color='#f67070', linewidth=2.5)
-            ax.fill_between(x, y, color='#fbc2eb', alpha=0.4)
+            ax.plot(x, y, color='#0077b6', linewidth=3)  # 蓝色折线
+            ax.fill_between(x, y, color='#90e0ef', alpha=0.5)  # 浅蓝填充
         else:
             # 数据点足够，使用平滑曲线
             x_new = np.linspace(min(x), max(x), 500)
             spline = make_interp_spline(x, y, k=3)
             y_smooth = spline(x_new)
             y_smooth = np.maximum(y_smooth, 0)
-            ax.fill_between(x_new, y_smooth, color='#fbc2eb', alpha=0.4)
-            ax.plot(x_new, y_smooth, color='#f67070', linewidth=2.5)
+            ax.fill_between(x_new, y_smooth, color='#90e0ef', alpha=0.5)  # 浅蓝填充
+            ax.plot(x_new, y_smooth, color='#0077b6', linewidth=3)  # 蓝色曲线
 
         # 设置坐标轴边框样式
         for spine in ax.spines.values():
-            spine.set_edgecolor('#dddddd')
-            spine.set_linewidth(1.5)
+            spine.set_edgecolor('#b2ebf2')  # 浅蓝边框
+            spine.set_linewidth=(2)
+            spine.set_capstyle('round')  # 圆角边框
 
         # 加载字体属性
         font_prop = FontProperties(fname=FONT_PATH)
 
         # 设置标题和轴标签
-        ax.set_title("弹幕随时间分布图", fontsize=18, fontproperties=font_prop, color='#444')
-        ax.set_xlabel("时间（分钟）", fontsize=14, fontproperties=font_prop, color='#666')
-        ax.set_ylabel("弹幕数量", fontsize=14, fontproperties=font_prop, color='#666')
+        ax.set_title("弹幕随时间分布图", fontsize=20, fontproperties=font_prop, color='#023e8a', pad=15)
+        ax.set_xlabel("时间（分钟）", fontsize=16, fontproperties=font_prop, color='#023e8a')
+        ax.set_ylabel("弹幕数量", fontsize=16, fontproperties=font_prop, color='#023e8a')
 
         # 设置刻度颜色和网格
-        ax.tick_params(colors='#999', labelsize=10)
-        ax.grid(alpha=0.3)
+        ax.tick_params(colors='#666', labelsize=12, width=1.5)
+        ax.grid(True, linestyle='--', alpha=0.4, color='#b2ebf2')
 
         # 检测峰值点（仅当数据点足够时）
         if len(x) >= 4:
@@ -188,14 +193,13 @@ def generate_danmaku_timeline(danmaku_list, logger=None):
                 peak_points.append(max_point)
             top_peaks = sorted(peak_points, key=lambda p: p[1], reverse=True)[:3]
             for x_val, y_val in top_peaks:
-                ax.scatter(x_val, y_val, color='gold', s=150, edgecolors='white', zorder=5)
-                ax.text(x_val + 0.5, y_val + 5, '关键时刻', fontsize=13,
-                        fontproperties=font_prop, color='crimson')
+                ax.scatter(x_val, y_val, color='#ffd700', s=200, edgecolors='#ffffff', zorder=5)  # 黄色峰值点
+                ax.text(x_val + 0.5, y_val + 5, '关键时刻', fontsize=14, fontproperties=font_prop, color='#023e8a')
 
         # 将图像保存到内存缓冲区
         buf = BytesIO()
-        plt.tight_layout()
-        plt.savefig(buf, format='png', facecolor=fig.get_facecolor())
+        plt.tight_layout(pad=2)
+        plt.savefig(buf, format='png', facecolor=fig.get_facecolor(), dpi=150, bbox_inches='tight')
         plt.close(fig)
         buf.seek(0)
 
@@ -211,119 +215,245 @@ def generate_danmaku_timeline(danmaku_list, logger=None):
         raise
 
 
+
 def generate_danmaku_time_proportion(danmaku_list, logger=None):
     try:
         # 1. 检查弹幕数据格式
         if not danmaku_list or not isinstance(danmaku_list, list):
-            app_logger.error("弹幕数据为空或格式错误")  # 如果数据为空或格式不对，记录错误
+            logger.error("弹幕数据为空或格式错误")
             raise ValueError("弹幕数据为空或格式错误")
 
-        app_logger.debug(f"Processing {len(danmaku_list)} danmaku entries for time proportion, sample: {danmaku_list[:5]}")  # 调试：显示前 5 条弹幕数据
+        logger.debug(f"Processing {len(danmaku_list)} danmaku entries for time proportion, sample: {danmaku_list[:5]}")
 
         # 2. 提取每条弹幕的小时信息
-        hours = []  # 用来存储每条弹幕发送的小时
+        hours = []
         for i, d in enumerate(danmaku_list):
-            if not isinstance(d, dict):  # 如果弹幕数据不是字典类型
-                app_logger.error(f"Invalid danmaku item {i}: type={type(d)}, value={d}")  # 记录错误日志
+            if not isinstance(d, dict):
+                logger.error(f"Invalid danmaku item {i}: type={type(d)}, value={d}")
                 raise ValueError(f"弹幕数据元素格式错误: 期望字典，实际为 {type(d)}")
 
-            send_time = d.get('send_time', '1970-01-01 00:00:00')  # 获取弹幕的发送时间，默认为一个无效时间
+            send_time = d.get('send_time', '1970-01-01 00:00:00')
             try:
-                # 提取小时信息，取24小时制
-                hour = int(send_time.split(' ')[1].split(':')[0]) % 24  # 获取小时并处理为 24 小时制
-                hours.append(hour)  # 将小时添加到列表中
+                hour = int(send_time.split(' ')[1].split(':')[0]) % 24
+                hours.append(hour)
             except (ValueError, IndexError) as e:
-                app_logger.warning(f"Invalid send_time format in danmaku: {send_time}, error: {str(e)}, skipping")  # 弹幕时间格式错误时，记录警告并跳过
+                logger.warning(f"Invalid send_time format in danmaku: {send_time}, error: {str(e)}, skipping")
 
-        if not hours:  # 如果没有有效的小时数据
-            app_logger.error("没有有效的弹幕发送时间数据")
+        if not hours:
+            logger.error("没有有效的弹幕发送时间数据")
             raise ValueError("没有有效的弹幕发送时间数据")
 
         # 3. 统计每小时的弹幕数量
-        hour_counts = Counter(hours)  # 计算每个小时的弹幕数量
-        labels = [f"{h}时" for h in range(24)]  # 每小时的标签（例如：0时，1时，...）
-        sizes = [hour_counts.get(h, 0) for h in range(24)]  # 获取每小时的弹幕数量
-        total = sum(sizes)  # 计算总弹幕数
-        if total == 0:  # 如果总弹幕数为 0
-            app_logger.error("弹幕数量总和为 0")
+        hour_counts = Counter(hours)
+        labels = [f"{h}时" for h in range(24)]
+        sizes = [hour_counts.get(h, 0) for h in range(24)]
+        total = sum(sizes)
+        if total == 0:
+            logger.error("弹幕数量总和为 0")
             raise ValueError("弹幕数量总和为 0")
 
         # 4. 合并小于 1% 的占比为“其他”
-        threshold = total * 0.01  # 设置 1% 的占比作为阈值
-        other_size = 0  # 统计小于 1% 的占比
-        filtered_labels = []  # 过滤后的标签列表
-        filtered_sizes = []  # 过滤后的数量列表
+        threshold = total * 0.01
+        other_size = 0
+        filtered_labels = []
+        filtered_sizes = []
         for label, size in zip(labels, sizes):
-            if size < threshold:  # 如果该小时的占比小于 1%
-                other_size += size  # 将其合并到“其他”
+            if size < threshold:
+                other_size += size
             else:
-                filtered_labels.append(label)  # 保留大于 1% 的标签
-                filtered_sizes.append(size)  # 保留大于 1% 的数量
-        if other_size > 0:  # 如果有小占比的数据合并为“其他”
-            filtered_labels.append("其他")  # 添加“其他”标签
-            filtered_sizes.append(other_size)  # 添加“其他”占比
+                filtered_labels.append(label)
+                filtered_sizes.append(size)
+        if other_size > 0:
+            filtered_labels.append("其他")
+            filtered_sizes.append(other_size)
 
         # 5. 创建画布和配置样式
-        fig, ax = plt.subplots(figsize=(6, 6), dpi=150)  # 创建一个 6x6 英寸的画布，分辨率为 150
-        fig.patch.set_facecolor('#E8ECEF')  # 设置画布背景颜色
-        ax.set_facecolor('none')  # 设置坐标轴背景透明
+        fig, ax = plt.subplots(figsize=(6, 6), dpi=150)
+        fig.patch.set_facecolor('#e0f7fa')  # 浅蓝色背景
+        ax.set_facecolor('none')
 
-        # 6. 选择高对比颜色方案
+        # 6. 定义蓝色渐变调色板
         colors = [
-            '#FF6699', '#00A1D6', '#9966FF', '#FFCC33', '#66CC99',
-            '#FF99CC', '#33B5E5', '#CC99FF', '#FFD700', '#99FF99',
-            '#FF6666', '#3399FF', '#CC66CC', '#FFAA33', '#66CCCC',
-            '#FF99AA', '#66B3FF', '#AA66CC', '#FFCC66', '#99CCCC',
-            '#FF3366', '#0066CC', '#9933CC', '#CCCCCC'  # 最后为“其他”
+            '#0077b6', '#00b4d8', '#90e0ef', '#48cae4', '#0096c7',
+            '#023e8a', '#66b3ff', '#3399ff', '#0066cc', '#b2ebf2',
+            '#0077b6', '#00b4d8', '#90e0ef', '#48cae4', '#0096c7',
+            '#023e8a', '#66b3ff', '#3399ff', '#0066cc', '#b2ebf2',
+            '#0077b6', '#00b4d8', '#90e0ef', '#b2ebf2'  # 最后为“其他”
         ]
 
         # 7. 绘制甜甜圈图
         wedges, texts, autotexts = ax.pie(
-            filtered_sizes,  # 使用过滤后的弹幕数量
-            labels=filtered_labels,  # 使用过滤后的标签
-            colors=colors[:len(filtered_sizes)],  # 使用高对比色
-            startangle=90,  # 从顶部开始绘制
-            counterclock=False,  # 顺时针方向绘制
-            wedgeprops={'width': 0.4, 'edgecolor': 'white', 'linewidth': 2.5, 'antialiased': True},  # 设置甜甜圈的样式
-            textprops={'fontproperties': FontProperties(fname=r'C:\Windows\Fonts\simhei.ttf'), 'fontsize': 12, 'color': '#1A1A1A'},  # 设置文字样式
-            autopct=lambda p: f'{p:.1f}%' if p > 2 else '',  # 小于 2% 的占比不显示
-            pctdistance=0.82,  # 设置文本的距离
+            filtered_sizes,
+            labels=filtered_labels,
+            colors=colors[:len(filtered_sizes)],
+            startangle=90,
+            counterclock=False,
+            wedgeprops={'width': 0.4, 'edgecolor': '#ffffff', 'linewidth': 3, 'antialiased': True},
+            textprops={'fontproperties': FontProperties(fname=r'C:\Users\zzzwww\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'), 'fontsize': 14, 'color': '#023e8a'},
+            autopct=lambda p: f'{p:.1f}%' if p > 2 else '',
+            pctdistance=0.82,
         )
 
         # 8. 美化标签和数字
         for text in texts:
-            text.set_fontproperties(FontProperties(fname=r'C:\Windows\Fonts\simhei.ttf'))  # 设置标签字体
-            text.set_fontsize(12)  # 设置字体大小
+            text.set_fontproperties(FontProperties(fname=r'C:\Users\zzzwww\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'))
+            text.set_fontsize(14)
         for autotext in autotexts:
-            autotext.set_fontproperties(FontProperties(fname=r'C:\Windows\Fonts\simhei.ttf'))  # 设置数字字体
-            autotext.set_fontsize(10)  # 设置数字字体大小
-            autotext.set_color('white')  # 设置数字字体颜色为白色
-            autotext.set_weight('bold')  # 设置数字字体为粗体
+            autotext.set_fontproperties(FontProperties(fname=r'C:\Users\zzzwww\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'))
+            autotext.set_fontsize(13)  # 增大字体
+            autotext.set_color('#ffffff')
+            autotext.set_weight('extra bold')  # 超粗体增强对比
 
         # 9. 绘制中心圆形
-        centre_circle = plt.Circle((0, 0), 0.6, fc='white')  # 绘制一个半径为 0.6 的白色圆形
-        ax.add_artist(centre_circle)  # 添加到图形中
+        centre_circle = plt.Circle((0, 0), 0.6, fc='white', ec='#b2ebf2', lw=2)
+        ax.add_artist(centre_circle)
 
         # 10. 设置标题
-        plt.title("弹幕发送时间分布", fontsize=18, fontproperties=FontProperties(fname=r'C:\Windows\Fonts\simhei.ttf'), color='#1A1A1A', pad=25)
+        plt.title("弹幕发送时间分布", fontsize=20, fontproperties=FontProperties(fname=r'C:\Users\zzzwww\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'), color='#023e8a', pad=25)
 
-        # 11. 调整布局，保证图表居中
+        # 11. 调整布局
         plt.subplots_adjust(left=0.15, right=0.85, top=0.85, bottom=0.15)
 
         # 12. 保存图像并转换为 Base64 格式
-        buf = BytesIO()  # 创建字节流对象
-        plt.savefig(buf, format='png', dpi=150, facecolor=fig.get_facecolor())  # 保存为 PNG 格式
-        plt.close(fig)  # 关闭图形，释放内存
-        buf.seek(0)  # 将指针移回文件开始位置
+        buf = BytesIO()
+        plt.savefig(buf, format='png', dpi=150, facecolor=fig.get_facecolor(), bbox_inches='tight')
+        plt.close(fig)
+        buf.seek(0)
 
-        img_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')  # 将图像转换为 Base64 格式
-        app_logger.debug("Danmaku time proportion donut chart generated successfully")  # 记录成功日志
-        return f"data:image/png;base64,{img_base64}"  # 返回图像的 Base64 编码
+        img_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+        logger.debug("Danmaku time proportion donut chart generated successfully")
+        return f"data:image/png;base64,{img_base64}"
 
     except Exception as e:
-        app_logger.error(f"生成弹幕时间占比图失败: {str(e)}")  # 捕获异常并记录错误日志
-        raise  # 重新抛出异常
+        logger.error(f"生成弹幕时间占比图失败: {str(e)}")
+        raise
 
+
+def get_danmaku_length_distribution(danmaku_list, logger=None):
+    try:
+        if not danmaku_list or not isinstance(danmaku_list, list):
+            logger.error("弹幕数据为空或格式错误")
+            raise ValueError("弹幕数据为空或格式错误")
+
+        logger.debug(f"Processing {len(danmaku_list)} danmaku entries for length distribution")
+
+        # 统计弹幕长度
+        short_count = 0  # 1-5字
+        medium_count = 0  # 6-10字
+        long_count = 0  # 11+字
+        total_count = 0
+
+        for d in danmaku_list:
+            if not isinstance(d, dict) or 'content' not in d:
+                logger.warning(f"Invalid danmaku item: {d}, skipping")
+                continue
+            content = d['content'] or ''
+            length = len(content)
+            total_count += 1
+            if 1 <= length <= 5:
+                short_count += 1
+            elif 6 <= length <= 10:
+                medium_count += 1
+            elif length >= 11:
+                long_count += 1
+
+        if total_count == 0:
+            logger.error("没有有效的弹幕数据")
+            raise ValueError("没有有效的弹幕数据")
+
+        # 计算占比
+        result = {
+            "short": {
+                "count": short_count,
+                "percentage": (short_count / total_count * 100) if total_count > 0 else 0.0
+            },
+            "medium": {
+                "count": medium_count,
+                "percentage": (medium_count / total_count * 100) if total_count > 0 else 0.0
+            },
+            "long": {
+                "count": long_count,
+                "percentage": (long_count / total_count * 100) if total_count > 0 else 0.0
+            }
+        }
+
+        logger.debug(f"Length distribution: {result}")
+        return result
+
+    except Exception as e:
+        logger.error(f"生成弹幕长度分布失败: {str(e)}")
+        raise
+
+def get_danmaku_color_distribution(danmaku_list, logger=None):
+    try:
+        if not danmaku_list or not isinstance(danmaku_list, list):
+            logger.error("弹幕数据为空或格式错误")
+            raise ValueError("弹幕数据为空或格式错误")
+
+        logger.debug(f"Processing {len(danmaku_list)} danmaku entries for color distribution")
+
+        # 颜色名称映射（常见颜色）
+        color_names = {
+            "#FFFFFF": "白色",
+            "#FF0000": "红色",
+            "#0000FF": "蓝色",
+            "#00FF00": "绿色",
+            "#FFFF00": "黄色",
+            "#FFA500": "橙色",
+            "#800080": "紫色",
+            "#000000": "黑色"
+        }
+
+        # 统计颜色
+        color_counts = Counter()
+        total_count = 0
+
+        for d in danmaku_list:
+            if not isinstance(d, dict) or 'color' not in d:
+                logger.warning(f"Invalid danmaku item: {d}, skipping")
+                continue
+            color_dec = d['color']
+            try:
+                # 将十进制颜色转换为十六进制
+                color_hex = f"#{int(color_dec):06X}"
+                color_counts[color_hex] += 1
+                total_count += 1
+            except (ValueError, TypeError):
+                logger.warning(f"Invalid color value: {color_dec}, skipping")
+                continue
+
+        if total_count == 0:
+            logger.error("没有有效的弹幕颜色数据")
+            raise ValueError("没有有效的弹幕颜色数据")
+
+        # 取前 5 种颜色，剩余归为“其他”
+        top_colors = color_counts.most_common(5)
+        other_count = total_count - sum(count for _, count in top_colors)
+
+        result = []
+        for color_hex, count in top_colors:
+            result.append({
+                "color": color_hex,
+                "name": color_names.get(color_hex, "未知颜色"),
+                "count": count,
+                "percentage": (count / total_count * 100)
+            })
+        if other_count > 0:
+            result.append({
+                "color": "#CCCCCC",
+                "name": "其他",
+                "count": other_count,
+                "percentage": (other_count / total_count * 100)
+            })
+
+        logger.debug(f"Color distribution: {result}")
+        return result
+
+    except Exception as e:
+        logger.error(f"生成弹幕颜色分布失败: {str(e)}")
+        raise
+
+    
 
 def calculate_active_users(danmaku_data, top_n=10):
     """

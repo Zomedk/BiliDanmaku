@@ -8,7 +8,7 @@ from modules.danmaku import fetch_danmaku
 from modules.cover_image import download_cover_image
 from modules.utils import handle_bv_input
 from modules.logger import app_logger
-from modules.danmaku_analysis import calculate_word_frequency, generate_word_cloud, generate_danmaku_timeline, generate_danmaku_time_proportion, calculate_active_users
+from modules.danmaku_analysis import calculate_word_frequency, generate_word_cloud, generate_danmaku_timeline, generate_danmaku_time_proportion, calculate_active_users, get_danmaku_length_distribution, get_danmaku_color_distribution
 from modules.sentiment_analysis import analyze_sentiment
 import datetime  # 时间相关的操作要用到
 from modules.hash_to_uid import hash_to_uid
@@ -310,6 +310,37 @@ def register():
         return jsonify({'message': '注册成功'})
     return jsonify({'error': '用户名已存在'}), 400
 
+@app.route('/danmaku_length', methods=['POST'])
+def danmaku_length():
+    try:
+        data = request.get_json()
+        cid = data.get('cid')
+        if not cid:
+            return jsonify({'error': '缺少 cid 参数'}), 400
+        
+        danmaku_list = fetch_danmaku(cid)
+        length_distribution = get_danmaku_length_distribution(danmaku_list, app_logger)
+        return jsonify(length_distribution)
+    
+    except Exception as e:
+        app_logger.error(f"获取弹幕长度分布失败: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/danmaku_color', methods=['POST'])
+def danmaku_color():
+    try:
+        data = request.get_json()
+        cid = data.get('cid')
+        if not cid:
+            return jsonify({'error': '缺少 cid 参数'}), 400
+        
+        danmaku_list = fetch_danmaku(cid)
+        color_distribution = get_danmaku_color_distribution(danmaku_list, app_logger)
+        return jsonify(color_distribution)
+    
+    except Exception as e:
+        app_logger.error(f"获取弹幕颜色分布失败: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 # -------------------- 启动 Flask 应用 --------------------
 if __name__ == '__main__':
     app.run(debug=True, port=5000)  # debug=True 可以看到详细错误信息（开发阶段用）

@@ -4,77 +4,78 @@ if (!localStorage.getItem('isLoggedIn')) {
 }
 
 new Vue({
-    el: '#app',  // Vue 实例挂载在页面上 id 为 app 的元素上
+    el: '#app',
     data: {
-        bvInput: '',  // 用户输入的 BV 号
-        videoInfo: null,  // 存储视频信息
-        danmakuData: [],  // 存储弹幕数据
-        wordFrequency: [],  // 存储词频数据
-        wordCloudImage: '',  // 存储词云图
-        danmakuTimelineImage: '',  // 存储弹幕时间分布图
-        timeProportionImage: '',  // 存储时间占比图
-        currentPage: 1,  // 当前页码
-        itemsPerPage: 50,  // 每页显示的条目数
-        totalPages: 1,  // 总页数
-        isLoading: false,  // 加载状态，防止重复请求
-        activeTab: 'video-info',  // 当前激活的 tab，默认是视频信息
-        searchKeyword: '',  // 搜索关键词
-        sentimentData: null,  // 存储情感分析数据
-        sortBy: 'time',  // 默认按时间排序
-        sortOrder: 'asc',  // 排序顺序，默认升序
-        pageInput: null,  // 页码输入框的值
-        activeUsers: [], // 新增：存储活跃用户排行榜
-        selectedUserUid: '',  // 当前选中的用户 UID
-        userDanmakuList: [],  // 当前选中用户的弹幕列表
-        showUserDanmakuModal: false,  // 控制弹幕展示框显示与否
-        userHashInput: '',  // 新增：用户输入的哈希值
-        showUserDanmakuResult: false,  // 新增：控制是否显示用户弹幕查询结果
+        bvInput: '',
+        videoInfo: null,
+        danmakuData: [],
+        wordFrequency: [],
+        wordCloudImage: '',
+        danmakuTimelineImage: '',
+        timeProportionImage: '',
+        currentPage: 1,
+        itemsPerPage: 50,
+        totalPages: 1,
+        isLoading: false,
+        activeTab: 'video-info',
+        searchKeyword: '',
+        sentimentData: null,
+        sortBy: 'time',
+        sortOrder: 'asc',
+        pageInput: null,
+        activeUsers: [],
+        selectedUserUid: '',
+        userDanmakuList: [],
+        showUserDanmakuModal: false,
+        userHashInput: '',
+        showUserDanmakuResult: false,
+        lengthDistribution: null,
+        colorDistribution: [],
         tabs: [
-            { id: 'video-info', name: '视频信息' },  // 视频信息 tab
-            { id: 'danmaku', name: '弹幕列表' },  // 弹幕列表 tab
-            { id: 'word-frequency', name: '词频统计' },  // 词频统计 tab
-            { id: 'advanced-analysis', name: '高级分析' },  // 高级分析 tab
-            { id: 'sentiment', name: '情感分析' },  // 情感分析 tab
-            { id: 'time-proportion', name: '弹幕时间占比' }  // 弹幕时间占比 tab
+            { id: 'video-info', name: '视频信息' },
+            { id: 'danmaku', name: '弹幕列表' },
+            { id: 'word-frequency', name: '词频统计' },
+            { id: 'advanced-analysis', name: '高级分析' },
+            { id: 'sentiment', name: '情感分析' },
+            { id: 'time-proportion', name: '弹幕时间占比' },
+            { id: 'danmaku-length', name: '长度分布' },
+            { id: 'danmaku-color', name: '颜色分布' }
         ]
     },
     methods: {
-        // 处理情感分析图表加载失败
         onChartError() {
             alert('情感分析图表加载失败');
-            this.sentimentData = null;  // 失败时清空数据
+            this.sentimentData = null;
         },
-        // 获取视频信息
         fetchVideoInfo() {
-            this.isLoading = true;  // 开始加载状态
-            console.log("Fetching video info for BV:", this.bvInput);  // 输出日志，调试用
+            this.isLoading = true;
+            console.log("Fetching video info for BV:", this.bvInput);
             fetch('http://127.0.0.1:5000/api/video', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bv: this.bvInput })  // 发送 BV 号给后端请求视频信息
+                body: JSON.stringify({ bv: this.bvInput })
             })
-            .then(response => response.json())  // 转换响应为 JSON
+            .then(response => response.json())
             .then(data => {
-                if (data.error) {  // 如果有错误
-                    alert(`获取视频信息失败：${data.error}`);  // 提示错误
+                if (data.error) {
+                    alert(`获取视频信息失败：${data.error}`);
                 } else {
-                    this.videoInfo = data;  // 成功获取视频信息
-                    this.activeTab = 'video-info';  // 切换到视频信息 tab
+                    this.videoInfo = data;
+                    this.activeTab = 'video-info';
                 }
             })
             .catch(error => {
-                alert(`获取视频信息失败: ${error.message}`);  // 捕获异常并提示错误
-                console.error('Error:', error);  // 打印错误日志
+                alert(`获取视频信息失败: ${error.message}`);
+                console.error('Error:', error);
             })
             .finally(() => {
-                this.isLoading = false;  // 完成加载，停止加载状态
+                this.isLoading = false;
             });
         },
-        // 获取弹幕列表数据
         fetchDanmaku() {
-            if (this.isLoading) return;  // 如果正在加载，阻止重复请求
-            this.isLoading = true;  // 开始加载
-            console.log("Fetching danmaku for BV:", this.bvInput, "Sort:", this.sortBy, this.sortOrder, "Page:", this.currentPage);  // 打印请求参数
+            if (this.isLoading) return;
+            this.isLoading = true;
+            console.log("Fetching danmaku for BV:", this.bvInput, "Sort:", this.sortBy, this.sortOrder, "Page:", this.currentPage);
             fetch('http://127.0.0.1:5000/api/danmaku', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -88,36 +89,35 @@ new Vue({
                 })
             })
             .then(res => {
-                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);  // 检查响应是否成功
-                return res.json();  // 转换为 JSON
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                return res.json();
             })
             .then(data => {
-                console.log("Received danmaku:", data.danmaku.slice(0, 5));  // 打印前五条弹幕
+                console.log("Received danmaku:", data.danmaku.slice(0, 5));
                 if (data.error) {
                     alert(`获取弹幕失败：${data.error}`);
-                    this.danmakuData = [];  // 如果有错误，清空弹幕数据
+                    this.danmakuData = [];
                 } else {
-                    this.danmakuData = data.danmaku || [];  // 成功获取数据
-                    this.totalPages = data.total_pages || 1;  // 设置总页数
-                    this.currentPage = data.current_page || 1;  // 设置当前页码
+                    this.danmakuData = data.danmaku || [];
+                    this.totalPages = data.total_pages || 1;
+                    this.currentPage = data.current_page || 1;
                 }
             })
             .catch(error => {
-                alert(`获取弹幕失败: ${error.message}`);  // 捕获异常
-                console.error('Error:', error);  // 打印错误日志
-                this.danmakuData = [];  // 清空弹幕数据
+                alert(`获取弹幕失败: ${error.message}`);
+                console.error('Error:', error);
+                this.danmakuData = [];
             })
             .finally(() => {
-                this.isLoading = false;  // 完成加载，停止加载状态
+                this.isLoading = false;
             });
         },
-        // 新增：获取用户弹幕
         async fetchUserDanmaku(hash = null) {
             if (this.isLoading) return;
             this.isLoading = true;
-            this.showUserDanmakuResult = true; // 显示查询结果区域
+            this.showUserDanmakuResult = true;
             try {
-                const userHash = hash || this.userHashInput; // 使用传入的哈希或输入框的哈希
+                const userHash = hash || this.userHashInput;
                 console.log("Fetching user danmaku for hash:", userHash);
                 const res = await axios.get('http://127.0.0.1:5000/api/user_danmaku', {
                     params: {
@@ -143,104 +143,97 @@ new Vue({
                 this.isLoading = false;
             }
         },
-        // 切换页面
         changePage(page) {
-            if (page >= 1 && page <= this.totalPages) {  // 如果页码合法
+            if (page >= 1 && page <= this.totalPages) {
                 this.currentPage = page;
                 this.pageInput = page;
-                this.fetchDanmaku();  // 获取该页数据
+                this.fetchDanmaku();
             }
         },
-        // 跳转到指定页面
         jumpToPage() {
-            const page = parseInt(this.pageInput);  // 将输入框的值转换为整数
-            if (!isNaN(page) && page >= 1 && page <= this.totalPages) {  // 验证页码合法性
+            const page = parseInt(this.pageInput);
+            if (!isNaN(page) && page >= 1 && page <= this.totalPages) {
                 this.currentPage = page;
-                this.fetchDanmaku();  // 获取该页数据
+                this.fetchDanmaku();
             } else {
-                alert(`请输入 1 到 ${this.totalPages} 之间的页码`);  // 提示用户页码无效
-                this.pageInput = null;  // 清空输入框
+                alert(`请输入 1 到 ${this.totalPages} 之间的页码`);
+                this.pageInput = null;
             }
         },
-        // 按指定列排序
         sortBy(column) {
-            if (this.isLoading) return;  // 如果正在加载，阻止重复排序
-            console.log("Sorting by:", column);  // 打印排序字段
-            if (this.sortBy === column) {  // 如果当前已经按该字段排序，切换排序方式（升序或降序）
+            if (this.isLoading) return;
+            console.log("Sorting by:", column);
+            if (this.sortBy === column) {
                 this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
             } else {
-                this.sortBy = column;  // 设置新的排序字段
-                this.sortOrder = 'asc';  // 默认升序
+                this.sortBy = column;
+                this.sortOrder = 'asc';
             }
-            this.currentPage = 1;  // 排序后从第一页开始显示
+            this.currentPage = 1;
             this.pageInput = 1;
-            this.fetchDanmaku();  // 获取新的排序结果
+            this.fetchDanmaku();
         },
-        // 获取词频数据
         async fetchWordFrequency() {
             try {
-                this.isLoading = true;  // 开始加载状态
-                console.log("Fetching word frequency for BV:", this.bvInput);  // 打印调试信息
+                this.isLoading = true;
+                console.log("Fetching word frequency for BV:", this.bvInput);
                 const response = await axios.post('http://127.0.0.1:5000/api/word_frequency', { bv: this.bvInput });
-                if (response.data.top_words) {  // 如果返回了有效数据
-                    console.log("Received word frequency:", response.data.top_words.slice(0, 5));  // 打印前五个词
-                    this.wordFrequency = response.data.top_words;  // 保存词频数据
+                if (response.data.top_words) {
+                    console.log("Received word frequency:", response.data.top_words.slice(0, 5));
+                    this.wordFrequency = response.data.top_words;
                 } else {
-                    alert('词频数据为空');  // 如果没有数据，提示错误
+                    alert('词频数据为空');
                 }
             } catch (error) {
                 const errorMsg = error.response && error.response.data.error 
                     ? `获取词频失败：${error.response.data.error}`
                     : `获取词频失败：${error.message}`;
-                alert(errorMsg);  // 提示错误
-                console.error('Error:', error);  // 打印错误日志
+                alert(errorMsg);
+                console.error('Error:', error);
             } finally {
-                this.isLoading = false;  // 完成加载
+                this.isLoading = false;
             }
         },
-        // 获取词云图
         async fetchWordCloud() {
             try {
-                this.isLoading = true;  // 开始加载
+                this.isLoading = true;
                 console.log("Fetching word cloud for BV:", this.bvInput);
                 const response = await axios.post('http://127.0.0.1:5000/api/word_cloud', { bv: this.bvInput });
                 if (response.data.image) {
-                    this.wordCloudImage = response.data.image;  // 保存词云图
+                    this.wordCloudImage = response.data.image;
                 } else {
-                    alert('词云图生成失败');  // 如果失败，提示错误
+                    alert('词云图生成失败');
                 }
             } catch (error) {
                 const errorMsg = error.response && error.response.data.error 
                     ? `获取词云失败：${error.response.data.error}`
                     : `获取词云失败：${error.message}`;
-                alert(errorMsg);  // 提示错误
-                console.error('Error:', error);  // 打印错误日志
+                alert(errorMsg);
+                console.error('Error:', error);
             } finally {
-                this.isLoading = false;  // 完成加载
+                this.isLoading = false;
             }
         },
-        // 获取弹幕时间分布图
         async fetchDanmakuTimeline() {
             try {
-                this.isLoading = true;  // 开始加载
+                this.isLoading = true;
                 console.log("Fetching danmaku timeline for BV:", this.bvInput);
                 const response = await axios.post('http://127.0.0.1:5000/api/danmaku_timeline', { bv: this.bvInput });
                 if (response.data.image) {
-                    this.danmakuTimelineImage = response.data.image;  // 保存弹幕时间分布图
+                    this.danmakuTimelineImage = response.data.image;
                 } else {
-                    alert('时间分布图生成失败');  // 失败时提示错误
+                    alert('时间分布图生成失败');
                 }
             } catch (error) {
                 const errorMsg = error.response && error.response.data.error 
                     ? `获取时间分布图失败：${error.response.data.error}`
                     : `获取时间分布图失败：${error.message}`;
-                alert(errorMsg);  // 提示错误
-                console.error('Error:', error);  // 打印错误日志
+                alert(errorMsg);
+                console.error('Error:', error);
             } finally {
-                this.isLoading = false;  // 完成加载
+                this.isLoading = false;
             }
         },
-        // 获取活跃用户排行榜
         async fetchActiveUsers() {
             if (this.isLoading) return;
             this.isLoading = true;
@@ -254,74 +247,120 @@ new Vue({
                 this.isLoading = false;
             }
         },
-        // 新增：获取活跃用户弹幕
         async fetchUserUid(userHash) {
             try {
-              const res = await axios.get('http://127.0.0.1:5000/api/user_uid', {
-                params: {
-                  hash: userHash,
-                  bv: this.bvInput
+                const res = await axios.get('http://127.0.0.1:5000/api/user_uid', {
+                    params: {
+                        hash: userHash,
+                        bv: this.bvInput
+                    }
+                });
+                const { uid } = res.data;
+                if (!uid) {
+                    alert('哈希转 UID 失败');
+                    return;
                 }
-              });
-              const { uid } = res.data;
-              if (!uid) {
-                alert('哈希转 UID 失败');
-                return;
-              }
-              this.selectedUserUid = uid; // 设置 UID
+                this.selectedUserUid = uid;
             } catch (err) {
-              console.error('获取 UID 失败', err);
-              alert('获取 UID 失败');
+                console.error('获取 UID 失败', err);
+                alert('获取 UID 失败');
             }
-          },
-        // 获取情感分析数据
+        },
         async fetchSentiment() {
             try {
-                this.isLoading = true;  // 开始加载
+                this.isLoading = true;
                 console.log("Fetching sentiment analysis for BV:", this.bvInput);
                 const response = await axios.post('http://127.0.0.1:5000/api/sentiment', { bv: this.bvInput });
                 if (response.data.counts && response.data.chart) {
-                    this.sentimentData = response.data;  // 保存情感分析数据
-                    console.log("Sentiment analysis data:", this.sentimentData);  // 打印情感分析数据
+                    this.sentimentData = response.data;
+                    console.log("Sentiment analysis data:", this.sentimentData);
                 } else {
-                    this.sentimentData = null;  // 无效数据，清空
+                    this.sentimentData = null;
                     alert('情感分析结果无效或无数据');
                 }
             } catch (error) {
-                this.sentimentData = null;  // 清空情感数据
+                this.sentimentData = null;
                 const errorMsg = error.response && error.response.data.error 
                     ? `情感分析失败：${error.response.data.error}`
                     : `情感分析失败：${error.message}`;
-                alert(errorMsg);  // 提示错误
-                console.error('Error:', error);  // 打印错误日志
+                alert(errorMsg);
+                console.error('Error:', error);
             } finally {
-                this.isLoading = false;  // 完成加载
+                this.isLoading = false;
             }
         },
-        // 获取弹幕时间占比图
         async fetchDanmakuTimeProportion() {
             try {
-                this.isLoading = true;  // 开始加载
+                this.isLoading = true;
                 console.log("Fetching danmaku time proportion for BV:", this.bvInput);
                 const response = await axios.post('http://127.0.0.1:5000/api/danmaku_time_proportion', { bv: this.bvInput });
                 if (response.data.image) {
-                    this.timeProportionImage = response.data.image;  // 保存时间占比图
+                    this.timeProportionImage = response.data.image;
                 } else {
-                    alert('生成时间占比图失败：无有效数据');  // 无效数据，提示错误
+                    alert('生成时间占比图失败：无有效数据');
                 }
             } catch (error) {
                 const errorMsg = error.response && error.response.data.error 
                     ? `生成时间占比图失败：${error.response.data.error}`
                     : `生成时间占比图失败：${error.message}`;
-                alert(errorMsg);  // 提示错误
-                console.error('Error:', error);  // 打印错误日志
+                alert(errorMsg);
+                console.error('Error:', error);
             } finally {
-                this.isLoading = false;  // 完成加载
+                this.isLoading = false;
+            }
+        },
+        async fetchDanmakuLength() {
+            if (!this.videoInfo || !this.videoInfo.cid) {
+                alert('请先查询视频信息');
+                this.isLoading = false;
+                return;
+            }
+            try {
+                this.isLoading = true;
+                const response = await axios.post('http://127.0.0.1:5000/api/danmaku_length', { cid: this.videoInfo.cid });
+                if (response.data.error) {
+                    alert(`获取弹幕长度分布失败：${response.data.error}`);
+                } else {
+                    console.log('Length distribution:', response.data);
+                    this.lengthDistribution = response.data;
+                }
+            } catch (error) {
+                const errorMsg = error.response && error.response.data.error 
+                    ? `获取弹幕长度分布失败：${error.response.data.error}`
+                    : `获取弹幕长度分布失败：${error.message}`;
+                alert(errorMsg);
+                console.error('Error:', error);
+            } finally {
+                this.isLoading = false;
+            }
+        },
+        async fetchDanmakuColor() {
+            if (!this.videoInfo || !this.videoInfo.cid) {
+                alert('请先查询视频信息');
+                this.isLoading = false;
+                return;
+            }
+            try {
+                this.isLoading = true;
+                const response = await axios.post('http://127.0.0.1:5000/api/danmaku_color', { cid: this.videoInfo.cid });
+                if (response.data.error) {
+                    alert(`获取弹幕颜色分布失败：${response.data.error}`);
+                } else {
+                    console.log('Color distribution:', response.data);
+                    this.colorDistribution = response.data;
+                }
+            } catch (error) {
+                const errorMsg = error.response && error.response.data.error 
+                    ? `获取弹幕颜色分布失败：${error.response.data.error}`
+                    : `获取弹幕颜色分布失败：${error.message}`;
+                alert(errorMsg);
+                console.error('Error:', error);
+            } finally {
+                this.isLoading = false;
             }
         }
     },
     computed: {
-        // 返回分页后的弹幕数据
         paginatedDanmaku() {
             return this.danmakuData;
         }

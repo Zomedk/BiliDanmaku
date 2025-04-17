@@ -5,8 +5,10 @@ import os
 # 数据库路径
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'users.db')
 
+
+# 初始化数据库，创建用户表并插入默认用户
 def init_db():
-    """初始化数据库，创建用户表并插入默认用户"""
+    
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('''
@@ -24,8 +26,9 @@ def init_db():
     conn.commit()
     conn.close()
 
+# 注册新用户
 def register_user(username, password):
-    """注册新用户"""
+   
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     try:
@@ -38,8 +41,9 @@ def register_user(username, password):
     finally:
         conn.close()
 
+#  验证用户登录
 def login_user(username, password):
-    """验证用户登录"""
+    
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     hashed_password = hashlib.sha256(password.encode()).hexdigest()

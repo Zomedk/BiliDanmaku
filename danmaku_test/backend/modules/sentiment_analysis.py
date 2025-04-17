@@ -1,4 +1,5 @@
 import matplotlib
+from io import BytesIO
 matplotlib.use('Agg')  # 使用 Agg 后端，这样避免了 Tkinter 主循环的问题，适合无 GUI 环境（比如服务器）
 
 import matplotlib.pyplot as plt
@@ -99,45 +100,76 @@ def analyze_sentiment(danmaku_list):
         }
 
         # 设置中文字体
-        font_path = r'C:\Windows\Fonts\simhei.ttf'  # 使用 SimHei 字体，解决中文显示问题
+        font_path = r'C:\Users\zzzwww\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'  # Noto Sans SC
+        # font_path = r'C:\Windows\Fonts\simhei.ttf'  # 备选：SimHei
         font = FontProperties(fname=font_path, size=12)
 
         # 生成图表：情感分布的饼图和柱状图
-        plt.figure(figsize=(5, 5))  # 设置画布大小
-        labels = ['积极', '消极', '中性']  # 情感类型标签
-        sizes = [sentiment_counts.get('positive', 0), sentiment_counts.get('negative', 0), sentiment_counts.get('neutral', 0)]  # 每种情感的数量
-        colors = ['#1f77b4', '#ff7f0e', '#2ca02c']  # 饼图的颜色
-        explode = (0.05, 0, 0)  # 设置爆炸效果，突出正向情感
+        plt.figure(figsize=(8, 4), dpi=150)  # 调整画布大小
+        plt.gcf().set_facecolor('#e0f7fa')  # 浅蓝色背景
+
+        # 定义蓝色渐变调色板
+        colors = ['#0077b6', '#48cae4', '#b2ebf2']  # 积极、消极、中性
+
+        # 数据准备
+        labels = ['积极', '消极', '中性']
+        sizes = [sentiment_counts.get('positive', 0), sentiment_counts.get('negative', 0), sentiment_counts.get('neutral', 0)]
+        explode = (0.1, 0, 0)  # 增强爆炸效果
 
         # 画饼图
         plt.subplot(1, 2, 1)
-        plt.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90, textprops={'fontproperties': font})
-        plt.title('情感分布比例', fontproperties=font, size=14, pad=10)
+        ax1 = plt.gca()
+        ax1.set_facecolor('#e0f7fa')
+        wedges, texts, autotexts = plt.pie(
+            sizes,
+            explode=explode,
+            labels=labels,
+            colors=colors,
+            autopct='%1.1f%%',
+            startangle=90,
+            wedgeprops={'edgecolor': '#ffffff', 'linewidth': 2, 'antialiased': True},
+            textprops={'fontproperties': font, 'fontsize': 12, 'color': '#023e8a'}
+        )
+        for text in texts:
+            text.set_fontproperties(font)
+            text.set_color('#023e8a')
+        for autotext in autotexts:
+            autotext.set_fontproperties(font)
+            autotext.set_color('#ffffff')
+            autotext.set_weight('bold')
+        plt.title('情感分布比例', fontproperties=font, size=16, color='#023e8a', pad=15)
 
         # 画柱状图
         plt.subplot(1, 2, 2)
-        bars = plt.bar(labels, sizes, color=colors)
-        plt.title('情感分布数量', fontproperties=font, size=14, pad=10)
-        plt.ylabel('数量', fontproperties=font, size=12)
-        plt.xticks(fontproperties=font)
+        ax2 = plt.gca()
+        ax2.set_facecolor('#e0f7fa')
+        bars = plt.bar(labels, sizes, color=colors, edgecolor='#ffffff', linewidth=1.5, alpha=0.9)
+        plt.title('情感分布数量', fontproperties=font, size=16, color='#023e8a', pad=15)
+        plt.ylabel('数量', fontproperties=font, size=12, color='#023e8a')
+        plt.xticks(fontproperties=font, color='#023e8a')
+        plt.yticks(color='#023e8a')
 
         # 在柱状图上显示数量
         for bar in bars:
             height = bar.get_height()
-            plt.text(bar.get_x() + bar.get_width() / 2, height, int(height), ha='center', va='bottom', fontproperties=font, size=10)
+            plt.text(
+                bar.get_x() + bar.get_width() / 2, height, int(height),
+                ha='center', va='bottom', fontproperties=font, size=10, color='#ffffff',
+                bbox=dict(facecolor='#023e8a', edgecolor='none', alpha=0.7, boxstyle='round,pad=0.3')
+            )
 
-        # 设置图表背景和网格
-        plt.gca().set_facecolor('#f8f9fa')  # 设置背景色
-        plt.gcf().set_facecolor('white')  # 设置整体画布背景
-        plt.grid(True, linestyle='--', color='#d3d3d3', alpha=0.5, axis='y')  # 设置网格
-        plt.tight_layout()  # 自适应布局，避免内容重叠
+        # 设置网格
+        plt.grid(True, linestyle='--', color='#b2ebf2', alpha=0.4, axis='y')
 
-        # 将图表保存为 Base64 编码格式，方便在网页中嵌入
-        buf = io.BytesIO()
-        plt.savefig(buf, format='png', bbox_inches='tight', dpi=150)  # 保存到缓冲区
+        # 调整布局
+        plt.tight_layout(pad=2)
+
+        # 保存为 Base64
+        buf = BytesIO()
+        plt.savefig(buf, format='png', bbox_inches='tight', dpi=150, facecolor=plt.gcf().get_facecolor())
         buf.seek(0)
-        img_base64 = base64.b64encode(buf.read()).decode('utf-8')  # 转换为 Base64 编码
-        plt.close()  # 关闭图表
+        img_base64 = base64.b64encode(buf.read()).decode('utf-8')
+        plt.close()
 
         # 计算高频词
         positive_freq = calculate_word_frequency(positive_words, sentiment_lexicon, stopwords, 'positive')

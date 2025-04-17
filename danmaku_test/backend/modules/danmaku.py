@@ -47,6 +47,7 @@ def fetch_danmaku(cid):
             # 解析弹幕的各个属性，使用逗号分割
             attributes = d.attrib.get('p', '').split(',')
             time_in_seconds = attributes[0] if len(attributes) > 0 else '0'  # 弹幕时间（秒）
+            color_dec = attributes[3] if len(attributes) > 3 else '16777215'  # 默认白色 (#FFFFFF)
             date_timestamp = attributes[4] if len(attributes) > 4 else '0'  # 弹幕发送时间的时间戳
             sender_hash = attributes[6] if len(attributes) > 6 else ''  # 发送者的唯一标识
             danmaku_content = d.text if d.text else ''  # 弹幕内容
@@ -63,7 +64,8 @@ def fetch_danmaku(cid):
                 'time': seconds_to_hms(time_in_seconds),  # 转换秒数为时分秒格式
                 'send_time': send_time,  # 发送时间
                 'hash': sender_hash,  # 发送者的唯一标识
-                'content': danmaku_content  # 弹幕内容
+                'content': danmaku_content,  # 弹幕内容
+                'color': color_dec  # 十进制颜色
             })
         
         if not danmaku_list:
