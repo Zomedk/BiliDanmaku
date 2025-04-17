@@ -18,6 +18,7 @@ new Vue({
         sortBy: 'time',  // 默认按时间排序
         sortOrder: 'asc',  // 排序顺序，默认升序
         pageInput: null,  // 页码输入框的值
+        activeUsers: [], // 新增：存储活跃用户排行榜
         tabs: [
             { id: 'video-info', name: '视频信息' },  // 视频信息 tab
             { id: 'danmaku', name: '弹幕列表' },  // 弹幕列表 tab
@@ -195,6 +196,20 @@ new Vue({
                 console.error('Error:', error);  // 打印错误日志
             } finally {
                 this.isLoading = false;  // 完成加载
+            }
+        },
+        // 新增：获取活跃用户排行榜
+        async fetchActiveUsers() {
+            if (this.isLoading) return;
+            this.isLoading = true;
+            try {
+            const res = await axios.get('/api/active_users', { params: { bv: this.bvInput } });
+            this.activeUsers = res.data.active_users || [];
+            } catch (err) {
+            console.error('获取活跃用户失败:', err);
+            alert('活跃用户排行榜获取失败');
+            } finally {
+            this.isLoading = false;
             }
         },
         // 获取情感分析数据

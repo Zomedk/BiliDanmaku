@@ -8,7 +8,7 @@ from modules.danmaku import fetch_danmaku
 from modules.cover_image import download_cover_image
 from modules.utils import handle_bv_input
 from modules.logger import app_logger
-from modules.danmaku_analysis import calculate_word_frequency, generate_word_cloud, generate_danmaku_timeline, generate_danmaku_time_proportion
+from modules.danmaku_analysis import calculate_word_frequency, generate_word_cloud, generate_danmaku_timeline, generate_danmaku_time_proportion, calculate_active_users
 from modules.sentiment_analysis import analyze_sentiment
 import datetime  # 时间相关的操作要用到
 
@@ -248,6 +248,22 @@ def danmaku_time_proportion():
         return jsonify({'image': image})
     except Exception as e:
         return jsonify({'error': f"生成时间占比图失败: {str(e)}"}), 400
+    
+
+
+@app.route('/api/active_users', methods=['GET'])
+def active_users():
+  # 原始弹幕获取逻辑
+   # 获取所有弹幕数据（可重用现有 fetch_danmaku + get_video_cid）
+    bv_input = request.args.get('bv', '')
+    bv = handle_bv_input(bv_input)
+    cid = get_video_cid(bv)
+    danmaku_data = fetch_danmaku(cid)
+   # TODO: 调用统计函数，返回前 10 名活跃用户
+    # 调用统计函数，取前 10 名
+    top_users = calculate_active_users(danmaku_data, top_n=10)
+    return jsonify({'active_users': top_users})
+
 
 # -------------------- 启动 Flask 应用 --------------------
 if __name__ == '__main__':

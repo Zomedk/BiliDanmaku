@@ -328,3 +328,20 @@ def generate_danmaku_time_proportion(danmaku_list, logger=None):
     except Exception as e:
         app_logger.error(f"生成弹幕时间占比图失败: {str(e)}")  # 捕获异常并记录错误日志
         raise  # 重新抛出异常
+
+    
+def calculate_active_users(danmaku_data, top_n=10):
+    """
+    统计弹幕数据中各发送者（hash）的发送次数，返回前 top_n 名列表。
+    :param danmaku_data: list of dict, 每条弹幕包含 'hash' 字段
+    :param top_n: int, 取前 N 名
+    :return: list of dict, 如 [{'user_hash': 'abc123', 'count': 42}, ...]
+    """
+    # 1. 提取所有 hash
+    hashes = [d.get('hash') for d in danmaku_data if 'hash' in d]
+    # 2. 分组计数
+    counts = Counter(hashes)  # collections.Counter 简洁统计��次数 :contentReference[oaicite:2]{index=2}
+    # 3. 取前 N 名
+    most_common = counts.most_common(top_n)  # 返回 [(hash, count), ...] :contentReference[oaicite:3]{index=3}
+    # 4. 格式化输出
+    return [{'user_hash': h, 'count': c} for h, c in most_common]

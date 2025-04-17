@@ -1,403 +1,278 @@
-/* 根元素：定义 CSS 变量 */
+/* 定义全局颜色变量 */
 :root {
-    --primary-color: #fb7299;
-    --secondary-color: #007bff;
-    --background-color: #f8f9fa;
-    --text-color: #333;
-    --light-pink: #ffe6f0;
+    --primary-color: #fb7299; /* 主色调：粉色 */
+    --secondary-color: #007bff; /* 次色调：蓝色 */
+    --background-color: #f8f9fa; /* 页面背景颜色：浅灰 */
+    --text-color: #333; /* 正文文字颜色 */
+    --light-pink: #ffe6f0; /* 浅粉色背景 */
 }
 
-/* 整体样式 */
+/* 页面基础样式 */
 body {
-    font-family: 'Noto Sans SC', Arial, sans-serif;
-    padding: 20px;
-    background-color: var(--background-color);
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
+    font-family: 'Noto Sans SC', Arial, sans-serif; /* 使用思源黑体和备用字体 */
+    padding: 20px; /* 页面内边距 */
+    background-color: var(--background-color); /* 背景色 */
+    margin: 0; /* 去掉默认外边距 */
+    display: flex; /* 启用 flex 布局 */
+    justify-content: center; /* 水平居中 */
+    align-items: flex-start; /* 顶部对齐 */
+    min-height: 100vh; /* 页面最小高度为视口高度 */
 }
 
-/* 页眉 */
+/* 页面标题区域样式 */
 .page-header {
-    max-width: 1000px;
-    margin: 10px auto 20px auto;
-    background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
-    color: white;
-    padding: 20px;
-    text-align: center;
-    font-size: 24px;
-    font-weight: bold;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px 8px 0 0;
+    max-width: 1000px; /* 最大宽度 */
+    margin: 10px auto 20px auto; /* 外边距，左右居中 */
+    background: linear-gradient(to right, var(--secondary-color), var(--primary-color)); /* 渐变背景 */
+    color: white; /* 字体颜色 */
+    padding: 20px; /* 内边距 */
+    text-align: center; /* 居中对齐 */
+    font-size: 24px; /* 字号 */
+    font-weight: bold; /* 加粗字体 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加阴影 */
+    border-radius: 8px 8px 0 0; /* 上圆角 */
 }
 
-/* 主容器 */
+/* 内容容器样式 */
 .container {
-    width: 100%;
-    max-width: 1000px;
-    background-color: #ffffff;
-    padding: 30px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 0 0 8px 8px;
-    overflow: hidden;
+    width: 100%; /* 宽度占满 */
+    max-width: 1000px; /* 最大宽度 */
+    background-color: #ffffff; /* 背景颜色 */
+    padding: 30px; /* 内边距 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 阴影 */
+    border-radius: 0 0 8px 8px; /* 下圆角 */
+    overflow: hidden; /* 隐藏溢出 */
 }
 
-/* 标题 */
+/* 页面主标题样式 */
 h1 {
-    font-size: 28px;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 25px;
-    color: var(--text-color);
+    font-size: 28px; /* 字体大小 */
+    font-weight: bold; /* 加粗 */
+    text-align: center; /* 居中 */
+    margin-bottom: 25px; /* 下外边距 */
+    color: var(--text-color); /* 字体颜色 */
 }
 
-/* 输入框和按钮容器 */
+/* 输入框和按钮组合 */
 .input-group {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
+    display: flex; /* 启用 flex 布局 */
+    justify-content: center; /* 居中排列 */
+    gap: 10px; /* 元素之间的间距 */
+    margin-bottom: 20px; /* 下边距 */
 }
 
-/* 输入框 */
+/* 输入框样式 */
 .input-field {
-    padding: 12px;
-    font-size: 16px;
-    border: 1px solid #cccccc;
-    border-radius: 4px;
-    width: 70%;
-    max-width: 500px;
+    padding: 12px; /* 内边距 */
+    font-size: 16px; /* 字号 */
+    border: 1px solid #cccccc; /* 灰色边框 */
+    border-radius: 4px; /* 圆角 */
+    width: 70%; /* 宽度占 70% */
+    max-width: 500px; /* 最大宽度限制 */
 }
 
-/* 按钮 */
+/* 按钮基础样式 */
 .btn-primary {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.3s;
+    background-color: var(--primary-color); /* 背景色 */
+    color: white; /* 字体颜色 */
+    border: none; /* 去掉边框 */
+    padding: 12px 24px; /* 内边距 */
+    font-size: 16px; /* 字号 */
+    cursor: pointer; /* 鼠标悬浮为小手 */
+    border-radius: 4px; /* 圆角 */
+    transition: background-color 0.3s; /* 背景色变化过渡 */
 }
 
+/* 按钮悬浮样式 */
 .btn-primary:hover {
-    background-color: #e65c8a;
+    background-color: #e65c8a; /* 浅一点的粉色 */
 }
 
+/* 按钮禁用样式 */
 .btn-primary:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
+    background-color: #cccccc; /* 灰色背景 */
+    cursor: not-allowed; /* 鼠标为禁止样式 */
 }
 
-/* 页码输入框 */
+/* 页码输入框样式 */
 .page-input {
-    width: 60px;
-    padding: 8px;
-    font-size: 14px;
-    border: 1px solid #cccccc;
-    border-radius: 4px;
-    text-align: center;
+    width: 60px; /* 固定宽度 */
+    padding: 8px; /* 内边距 */
+    font-size: 14px; /* 字号 */
+    border: 1px solid #cccccc; /* 灰色边框 */
+    border-radius: 4px; /* 圆角 */
+    text-align: center; /* 文本居中 */
 }
 
-/* 选项卡导航 */
+/* 选项卡导航容器 */
 .tab-nav {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin: 20px 0;
-    flex-wrap: wrap;
+    display: flex; /* 启用 flex 布局 */
+    justify-content: center; /* 居中 */
+    gap: 15px; /* 元素间距 */
+    margin: 20px 0; /* 上下边距 */
+    flex-wrap: wrap; /* 换行显示 */
 }
 
-/* 选项卡按钮 */
+/* 选项卡按钮样式 */
 .tab-button {
-    background-color: #f0f0f0;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.3s;
+    background-color: #f0f0f0; /* 灰色背景 */
+    border: none; /* 无边框 */
+    padding: 10px 20px; /* 内边距 */
+    font-size: 16px; /* 字号 */
+    cursor: pointer; /* 鼠标样式 */
+    border-radius: 4px; /* 圆角 */
+    transition: background-color 0.3s; /* 背景过渡 */
 }
 
+/* 选项卡悬浮样式 */
 .tab-button:hover {
-    background-color: #e0e0e0;
+    background-color: #e0e0e0; /* 更浅的灰色 */
 }
 
+/* 激活选项卡样式 */
 .tab-active {
-    background-color: var(--secondary-color);
-    color: white;
+    background-color: var(--secondary-color); /* 蓝色背景 */
+    color: white; /* 白色字体 */
 }
 
+/* 激活状态下的悬浮效果 */
 .tab-active:hover {
-    background-color: #0056b3;
+    background-color: #0056b3; /* 更深蓝色 */
 }
 
-/* 选项卡内容 */
+/* 选项卡内容容器 */
 .tab-content {
-    padding: 15px;
+    padding: 15px; /* 内边距 */
 }
 
+/* 单个选项卡面板样式 */
 .tab-pane {
-    background-color: #fff;
-    padding: 15px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    border: 1px solid #ddd;
+    background-color: #fff; /* 白色背景 */
+    padding: 15px; /* 内边距 */
+    border-radius: 4px; /* 圆角 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* 阴影 */
+    border: 1px solid #ddd; /* 边框 */
 }
 
-/* 视频信息 */
+/* 信息项样式 */
 .info-item {
-    margin-bottom: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #ddd;
+    margin-bottom: 12px; /* 底部外边距 */
+    padding-bottom: 12px; /* 底部内边距 */
+    border-bottom: 1px solid #ddd; /* 下边框 */
 }
 
+/* 加粗字体 */
 strong {
-    font-weight: bold;
+    font-weight: bold; /* 加粗 */
 }
 
+/* 链接样式 */
 a {
-    color: var(--secondary-color);
-    text-decoration: none;
+    color: var(--secondary-color); /* 蓝色字体 */
+    text-decoration: none; /* 去除下划线 */
 }
 
+/* 链接悬浮样式 */
 a:hover {
-    text-decoration: underline;
+    text-decoration: underline; /* 添加下划线 */
 }
 
-/* 封面图 */
+/* 封面图片容器 */
 .cover-container {
-    margin-top: 10px;
-    text-align: center;
+    margin-top: 10px; /* 顶部外边距 */
+    text-align: center; /* 居中显示 */
 }
 
+/* 封面图样式 */
 .cover-image {
-    max-width: 100%;
-    border-radius: 4px;
+    max-width: 100%; /* 图片不超出容器 */
+    border-radius: 4px; /* 圆角边框 */
 }
 
-/* 词频统计 */
-.word-frequency {
-    margin-top: 15px;
-    padding: 10px;
-    background-color: var(--light-pink);
-    border-radius: 5px;
+/* 表格样式 */
+table {
+    width: 100%; /* 宽度占满 */
+    border-collapse: collapse; /* 合并边框 */
+    margin-bottom: 20px; /* 底部外边距 */
 }
 
-.word-frequency-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+/* 表头样式 */
+th {
+    background-color: var(--light-pink); /* 粉色背景 */
+    padding: 10px; /* 内边距 */
+    text-align: left; /* 左对齐 */
+    border-bottom: 2px solid #ddd; /* 下边框 */
 }
 
-.word-frequency-table th {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 12px;
-    text-align: left;
-    font-size: 16px;
+/* 表格单元格样式 */
+td {
+    padding: 10px; /* 内边距 */
+    border-bottom: 1px solid #ddd; /* 下边框 */
 }
 
-.word-frequency-table td {
-    padding: 10px;
-    border: 1px solid #cccccc;
-    font-size: 14px;
-}
-
-.word-frequency-table tr:hover {
-    background-color: var(--light-pink);
-}
-
-/* 弹幕列表 */
-.danmaku-list {
-    margin-top: 15px;
-    padding: 15px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-/* 弹幕表格 */
-.danmaku-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-.danmaku-table th {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 12px;
-    font-size: 15px;
-    cursor: pointer;
-    position: relative;
-    transition: background-color 0.2s;
-}
-
-.danmaku-table th:hover {
-    background-color: #e65c8a;
-}
-
-.danmaku-table th span {
-    margin-left: 5px;
-    font-size: 12px;
-}
-
-.danmaku-table td {
-    padding: 12px;
-    border-bottom: 1px solid #eee;
-    font-size: 14px;
-    color: var(--text-color);
-}
-
-.danmaku-table tr:hover {
-    background-color: var(--light-pink);
-}
-
-.danmaku-table td:nth-child(1) { width: 15%; }
-.danmaku-table td:nth-child(2) { width: 25%; }
-.danmaku-table td:nth-child(3) { width: 25%; }
-.danmaku-table td:nth-child(4) { width: 35%; }
-
-/* 分页 */
+/* 分页按钮容器 */
 .pagination {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 20px;
-    align-items: center;
+    display: flex; /* 启用 flex */
+    justify-content: center; /* 居中 */
+    gap: 10px; /* 间距 */
+    margin-top: 20px; /* 顶部外边距 */
+    flex-wrap: wrap; /* 超出换行 */
 }
 
-.pagination button {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
+/* 分页按钮样式 */
+.pagination-button {
+    padding: 8px 12px; /* 内边距 */
+    font-size: 14px; /* 字号 */
+    border: 1px solid #ccc; /* 边框 */
+    background-color: white; /* 背景色 */
+    cursor: pointer; /* 鼠标样式 */
+    border-radius: 4px; /* 圆角 */
 }
 
-.pagination button:hover {
-    background-color: #e65c8a;
+/* 当前页按钮样式 */
+.pagination-button.active {
+    background-color: var(--secondary-color); /* 蓝色背景 */
+    color: white; /* 白色字体 */
+    border-color: var(--secondary-color); /* 边框颜色一致 */
 }
 
-.pagination button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
+/* 悬浮分页按钮 */
+.pagination-button:hover:not(.active) {
+    background-color: #f0f0f0; /* 浅灰背景 */
 }
 
-/* 词云图 */
-.word-cloud-container {
-    margin-top: 15px;
-    text-align: center;
-    background-color: var(--light-pink);
-    padding: 15px;
-    border-radius: 8px;
+/* ========== 活跃用户排行榜 样式 ========== */
+.active-users-container {
+    /* 与上方分析模块保持间距 */
+    margin-top: 20px; /* CSS 属性 margin-top 设置元素顶部外边距 :contentReference[oaicite:0]{index=0} */
 }
 
-.word-cloud-image {
-    max-width: 100%;
-    max-height: 600px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.active-users-container h4 {
+    /* 标题更突出 */
+    font-size: 1.25rem;  /* rem 单位相对于根元素字体大小，常用于响应式字体 :contentReference[oaicite:1]{index=1} */
+    margin-bottom: 0.5em; /* em 单位相对于自身字体大小，设置底部外边距 :contentReference[oaicite:2]{index=2} */
+    color: var(--text-color); /* 复用全局 CSS 变量 var() 定义的文字颜色 :contentReference[oaicite:3]{index=3} */
 }
 
-/* 时间分布图 */
-.timeline-container {
-    margin-top: 15px;
-    text-align: center;
-    background-color: var(--light-pink);
-    padding: 15px;
-    border-radius: 8px;
+.active-users-container table {
+    /* 表格边框和圆角 */
+    border: 1px solid #ddd;    /* CSS border 速写属性，设置宽度、样式、颜色 :contentReference[oaicite:4]{index=4} */
+    border-radius: 4px;        /* border-radius 设置圆角 :contentReference[oaicite:5]{index=5} */
+    overflow: hidden;          /* 确保圆角效果不被内容溢出破坏 */
 }
 
-.timeline-image {
-    max-width: 100%;
-    max-height: 600px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.active-users-container th,
+.active-users-container td {
+    /* 单元格内边距，增强可读性 */
+    padding: 8px;              /* padding 属性设置单元格内边距 :contentReference[oaicite:6]{index=6} */
 }
 
-/* 时间占比图 */
-.time-proportion-container {
-    margin-top: 15px;
-    text-align: center;
-    background-color: var(--light-pink);
-    padding: 15px;
-    border-radius: 8px;
+.active-users-container tbody tr:nth-child(even) {
+    /* 条纹隔行背景色，提高行可读性 */
+    background-color: #f2f2f2; /* 使用 :nth-child(even) 伪类实现斑马线表格 :contentReference[oaicite:7]{index=7} */
 }
 
-.time-proportion-image {
-    max-width: 100%;
-    max-height: 700px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* 加载提示 */
-.loading {
-    text-align: center;
-    color: #888;
-    margin-top: 20px;
-    font-size: 16px;
-}
-
-/* 分析图表 */
-.analysis-chart {
-    max-width: 100%;
-    margin: 20px 0;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-    .page-header {
-        font-size: 18px;
-        padding: 15px;
-    }
-
-    .container {
-        padding: 10px;
-    }
-
-    .input-group {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .input-field, .btn-primary {
-        width: 100%;
-    }
-
-    .page-input {
-        width: 50px;
-    }
-
-    .tab-nav {
-        flex-direction: column;
-    }
-
-    .tab-button {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-
-    .danmaku-table {
-        display: block;
-        overflow-x: auto;
-    }
-
-    .danmaku-table th, .danmaku-table td {
-        min-width: 100px;
-    }
-
-    .time-proportion-image {
-        max-height: 500px;
-    }
+/* 可选：鼠标悬停高亮当前行 */
+.active-users-container tbody tr:hover {
+    background-color: #e6e6e6; /* 简单交互反馈，提升可用性 :contentReference[oaicite:8]{index=8} */
 }
