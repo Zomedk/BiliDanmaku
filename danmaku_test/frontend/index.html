@@ -231,32 +231,13 @@
                             {{ isLoading ? '加载中...' : '查询长度分布' }}
                         </button>
                     </div>
-                    <div v-if="lengthDistribution" class="length-stats">
+                    <div v-if="lengthDistribution && lengthDistribution.image" class="length-stats">
                         <h3 class="section-title">弹幕长度分布</h3>
-                        <table class="word-frequency-table">
-                            <thead>
-                                <tr><th>长度类别</th><th>弹幕数量</th><th>占比</th></tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>短弹幕 (1-5字)</td>
-                                    <td>{{ lengthDistribution.short.count }}</td>
-                                    <td>{{ lengthDistribution.short.percentage.toFixed(1) }}%</td>
-                                </tr>
-                                <tr>
-                                    <td>中弹幕 (6-10字)</td>
-                                    <td>{{ lengthDistribution.medium.count }}</td>
-                                    <td>{{ lengthDistribution.medium.percentage.toFixed(1) }}%</td>
-                                </tr>
-                                <tr>
-                                    <td>长弹幕 (11+字)</td>
-                                    <td>{{ lengthDistribution.long.count }}</td>
-                                    <td>{{ lengthDistribution.long.percentage.toFixed(1) }}%</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <img :src="lengthDistribution.image" alt="弹幕长度分布图" class="distribution-image" />
                     </div>
-                    <div v-else><p class="no-data">暂无长度分布数据，请点击“查询长度分布”。</p></div>
+                    <div v-else>
+                        <p class="no-data">暂无长度分布数据，请点击“查询长度分布”。</p>
+                    </div>
                 </div>
 
                 <!-- 弹幕颜色分布 -->
@@ -270,14 +251,14 @@
                         <h3 class="section-title">弹幕颜色分布</h3>
                         <table class="word-frequency-table">
                             <thead>
-                                <tr><th>颜色</th><th>名称</th><th>弹幕数量</th><th>占比</th></tr>
+                                <tr><th>颜色</th><th>色块</th><th>弹幕数量</th><th>占比</th></tr>
                             </thead>
                             <tbody>
-                                <tr v-for="color in colorDistribution" :key="color.color">
-                                    <td><span class="color-preview" :style="{ background: color.color }"></span></td>
-                                    <td>{{ color.name }}</td>
-                                    <td>{{ color.count }}</td>
-                                    <td>{{ color.percentage.toFixed(1) }}%</td>
+                                <tr v-for="item in colorDistribution" :key="item.color">
+                                    <td>{{ item.name }}</td>
+                                    <td><div :style="{ backgroundColor: item.color }" class="color-box"></div></td>
+                                    <td>{{ item.count }}</td>
+                                    <td>{{ item.percentage.toFixed(1) }}%</td>
                                 </tr>
                             </tbody>
                         </table>

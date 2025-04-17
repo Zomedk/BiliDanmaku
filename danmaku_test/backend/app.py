@@ -51,22 +51,27 @@ def serve_static(path):
 @app.route('/api/video', methods=['POST'])
 def video_info():
     data = request.json
-    bv_input = data.get('bv', '')  # 拿到前端传来的 BV 号
+    bv_input = data.get('bv', '')
     app_logger.debug(f"Received BV input: {bv_input}")
     try:
-        bv = handle_bv_input(bv_input)  # 处理一下（防止用户乱输）
+        bv = handle_bv_input(bv_input)
         app_logger.debug(f"Parsed BV: {bv}")
 
-        # 获取视频信息（包括标题、封面、up主名、链接、时长等）
+        # 获取视频信息
         title, cover_path, up_name, up_link, video_duration, formatted_duration = get_video_info(bv)
-        app_logger.debug(f"Video Info: title={title}, cover={cover_path}, up_name={up_name}, up_link={up_link}, duration={video_duration}")
+        # 获取 CID
+        cid = get_video_cid(bv)
+        app_logger.debug(f"Video Info: title={title}, cover={cover_path}, up_name={up_name}, up_link={up_link}, cid={cid}")
 
-        # 把需要的内容打包返回给前端
+        # 返回包含 cid 的 JSON
         return jsonify({
             'title': title,
             'cover': cover_path,
             'up_name': up_name,
-            'up_link': up_link
+            'up_link': up_link,
+            'cid': cid,
+            'duration': video_duration,
+            'formatted_duration': formatted_duration
         })
     except Exception as e:
         app_logger.error(f"Error in video_info: {str(e)}")
@@ -310,7 +315,7 @@ def register():
         return jsonify({'message': '注册成功'})
     return jsonify({'error': '用户名已存在'}), 400
 
-@app.route('/danmaku_length', methods=['POST'])
+@app.route('/api/danmaku_length', methods=['POST'])
 def danmaku_length():
     try:
         data = request.get_json()
@@ -326,18 +331,16 @@ def danmaku_length():
         app_logger.error(f"获取弹幕长度分布失败: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@app.route('/danmaku_color', methods=['POST'])
+@app.route('/api/danmaku_color', methods=['POST'])
 def danmaku_color():
     try:
         data = request.get_json()
         cid = data.get('cid')
         if not cid:
             return jsonify({'error': '缺少 cid 参数'}), 400
-        
         danmaku_list = fetch_danmaku(cid)
         color_distribution = get_danmaku_color_distribution(danmaku_list, app_logger)
         return jsonify(color_distribution)
-    
     except Exception as e:
         app_logger.error(f"获取弹幕颜色分布失败: {str(e)}")
         return jsonify({'error': str(e)}), 500

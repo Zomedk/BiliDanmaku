@@ -390,3 +390,24 @@ body {
     50% { opacity: 0.5; }
     100% { opacity: 1; }
 }
+
+.color-box {
+    width: 20px;
+    height: 20px;
+    border: 1px solid #ccc;
+}
+
+.distribution-image {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+.length-stats {
+    text-align: center;
+}
+.section-title {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}

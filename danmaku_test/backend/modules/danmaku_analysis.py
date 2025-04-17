@@ -12,8 +12,9 @@ from matplotlib.font_manager import FontProperties  # 用于设置字体
 from scipy.interpolate import make_interp_spline  # 用于平滑曲线
 from scipy.signal import find_peaks  # 用于查找数据峰值
 from modules.logger import app_logger  # 引入日志模块，方便调试和记录错误
-
-
+from collections import Counter
+import logging
+from matplotlib import font_manager
 
 # 停用词文件路径
 STOPWORDS_PATH = r'D:\Lernen\danmaku_test\danmaku_test\backend\stopwords_cn.txt'
@@ -337,6 +338,14 @@ def get_danmaku_length_distribution(danmaku_list, logger=None):
 
         logger.debug(f"Processing {len(danmaku_list)} danmaku entries for length distribution")
 
+        # 设置中文字体
+        try:
+            font_manager.fontManager.addfont('C:/Windows/Fonts/simhei.ttf')  # Windows
+            plt.rcParams['font.sans-serif'] = ['SimHei']
+        except FileNotFoundError:
+            plt.rcParams['font.sans-serif'] = ['Noto Sans CJK SC', 'Microsoft YaHei', 'Arial Unicode MS']
+        plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+
         # 统计弹幕长度
         short_count = 0  # 1-5字
         medium_count = 0  # 6-10字
@@ -362,27 +371,59 @@ def get_danmaku_length_distribution(danmaku_list, logger=None):
             raise ValueError("没有有效的弹幕数据")
 
         # 计算占比
+        short_percentage = (short_count / total_count * 100) if total_count > 0 else 0.0
+        medium_percentage = (medium_count / total_count * 100) if total_count > 0 else 0.0
+        long_percentage = (long_count / total_count * 100) if total_count > 0 else 0.0
+
+        # 生成水平柱状图
+        labels = ['短弹幕 (1-5字)', '中弹幕 (6-10字)', '长弹幕 (11+字)']
+        percentages = [short_percentage, medium_percentage, long_percentage]
+        colors = ['#4B8BFF', '#6AA8FF', '#8FC6FF']  # 蓝色渐变，与 btn-primary 一致
+        edge_color = '#CCCCCC'  # 边框色，与 UI 边框一致
+
+        plt.figure(figsize=(8, 4), facecolor='#F5F5F5')  # 背景色匹配 UI
+        ax = plt.gca()
+        ax.set_facecolor('#F5F5F5')  # 坐标轴背景
+        bars = plt.barh(labels, percentages, color=colors, edgecolor=edge_color, linewidth=1.5, alpha=0.9)
+        plt.xlabel('占比 (%)', fontsize=12, color='#333333')
+        plt.title('弹幕长度分布', fontsize=16, fontweight='bold', color='#333333', pad=15)
+        plt.grid(True, axis='x', linestyle='--', alpha=0.5, color='#CCCCCC')
+
+        # 添加百分比标签
+        for bar in bars:
+            width = bar.get_width()
+            plt.text(x=width + 1, y=bar.get_y() + bar.get_height()/2, s=f'{width:.1f}%', 
+                     va='center', ha='left', fontsize=10, color='#333333')
+
+        # 美化样式
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_color('#CCCCCC')
+        ax.spines['bottom'].set_color('#CCCCCC')
+        ax.tick_params(axis='both', colors='#333333', labelsize=10)
+
+        plt.tight_layout()
+
+        # 保存为 Base64
+        img_io = BytesIO()
+        plt.savefig(img_io, format='PNG', bbox_inches='tight', transparent=False)
+        img_io.seek(0)
+        img_base64 = base64.b64encode(img_io.getvalue()).decode('utf-8')
+        plt.close()
+
         result = {
-            "short": {
-                "count": short_count,
-                "percentage": (short_count / total_count * 100) if total_count > 0 else 0.0
-            },
-            "medium": {
-                "count": medium_count,
-                "percentage": (medium_count / total_count * 100) if total_count > 0 else 0.0
-            },
-            "long": {
-                "count": long_count,
-                "percentage": (long_count / total_count * 100) if total_count > 0 else 0.0
-            }
+            "image": f"data:image/png;base64,{img_base64}"
         }
 
-        logger.debug(f"Length distribution: {result}")
+        logger.debug(f"Length distribution image generated: {result['image'][:50]}...")
         return result
 
     except Exception as e:
         logger.error(f"生成弹幕长度分布失败: {str(e)}")
         raise
+
+
+
 
 def get_danmaku_color_distribution(danmaku_list, logger=None):
     try:
@@ -391,18 +432,6 @@ def get_danmaku_color_distribution(danmaku_list, logger=None):
             raise ValueError("弹幕数据为空或格式错误")
 
         logger.debug(f"Processing {len(danmaku_list)} danmaku entries for color distribution")
-
-        # 颜色名称映射（常见颜色）
-        color_names = {
-            "#FFFFFF": "白色",
-            "#FF0000": "红色",
-            "#0000FF": "蓝色",
-            "#00FF00": "绿色",
-            "#FFFF00": "黄色",
-            "#FFA500": "橙色",
-            "#800080": "紫色",
-            "#000000": "黑色"
-        }
 
         # 统计颜色
         color_counts = Counter()
@@ -434,7 +463,7 @@ def get_danmaku_color_distribution(danmaku_list, logger=None):
         for color_hex, count in top_colors:
             result.append({
                 "color": color_hex,
-                "name": color_names.get(color_hex, "未知颜色"),
+                "name": color_hex,  # 直接使用颜色代码
                 "count": count,
                 "percentage": (count / total_count * 100)
             })
@@ -452,8 +481,6 @@ def get_danmaku_color_distribution(danmaku_list, logger=None):
     except Exception as e:
         logger.error(f"生成弹幕颜色分布失败: {str(e)}")
         raise
-
-    
 
 def calculate_active_users(danmaku_data, top_n=10):
     """
