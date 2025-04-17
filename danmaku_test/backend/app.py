@@ -11,7 +11,7 @@ from modules.logger import app_logger
 from modules.danmaku_analysis import calculate_word_frequency, generate_word_cloud, generate_danmaku_timeline, generate_danmaku_time_proportion, calculate_active_users
 from modules.sentiment_analysis import analyze_sentiment
 import datetime  # 时间相关的操作要用到
-
+from modules.hash_to_uid import hash_to_uid
 # -------------------- 初始化 Flask 应用 --------------------
 app = Flask(__name__)
 
@@ -264,6 +264,21 @@ def active_users():
     top_users = calculate_active_users(danmaku_data, top_n=10)
     return jsonify({'active_users': top_users})
 
+@app.route('/api/user_danmaku', methods=['GET'])
+def user_danmaku():
+    user_hash = request.args.get('hash', '')
+    bv_input = request.args.get('bv', '')
+    bv = handle_bv_input(bv_input)
+    cid = get_video_cid(bv)
+    danmaku_data = fetch_danmaku(cid)
+
+    uid = hash_to_uid(user_hash)
+    if uid == -1:
+        return jsonify({'uid': None, 'danmaku': []})
+
+    # 过滤该用户发的弹幕
+    user_danmaku = [d for d in danmaku_data if d.get('uid') == uid]
+    return jsonify({'uid': uid, 'danmaku': user_danmaku})
 
 # -------------------- 启动 Flask 应用 --------------------
 if __name__ == '__main__':

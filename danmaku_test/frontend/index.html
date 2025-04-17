@@ -154,24 +154,36 @@
                     <!-- 新增：活跃用户排行榜 -->
                     <div class="input-group" style="margin-top: 24px;">
                         <button @click="fetchActiveUsers" class="btn-primary" :disabled="isLoading">
-                        {{ isLoading ? '加载中...' : '获取活跃用户排行榜' }}
+                            {{ isLoading ? '加载中...' : '获取活跃用户排行榜' }}
                         </button>
                     </div>
+
                     <div v-if="activeUsers.length > 0" class="active-users-container">
                         <h4>活跃用户排行榜</h4>
                         <table class="word-frequency-table">
-                        <thead>
-                            <tr><th>排名</th><th>用户哈希</th><th>弹幕数</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(u, idx) in activeUsers" :key="u.user_hash">
-                            <td>{{ idx + 1 }}</td>
-                            <td>{{ u.user_hash }}</td>
-                            <td>{{ u.count }}</td>
-                            </tr>
-                        </tbody>
+                            <thead>
+                                <tr><th>排名</th><th>用户哈希</th><th>弹幕数</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(u, idx) in activeUsers" :key="u.user_hash">
+                                    <td>{{ idx + 1 }}</td>
+                                    <td @click="fetchUserDanmaku(u.user_hash)" class="clickable">{{ u.user_hash }}</td>
+                                    <td>{{ u.count }}</td>
+                                </tr>
+                            </tbody>
                         </table>
-                    </div>                    
+                    </div>
+
+                    <!-- 弹幕展示区 -->
+                    <div v-if="showUserDanmakuModal">
+                        <h4>UID：{{ selectedUserUid }} 的弹幕</h4>
+                        <ul class="danmaku-list">
+                            <li v-for="(d, idx) in userDanmakuList" :key="idx">
+                                {{ d.text }} <span style="color: gray;">[{{ d.time }}]</span>
+                            </li>
+                        </ul>
+                    </div>
+                  
                     <p>更多功能（观众IP属地统计，情感分析等）敬请期待。</p>
                 </div>
 

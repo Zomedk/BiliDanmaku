@@ -272,7 +272,39 @@ td {
     background-color: #f2f2f2; /* 使用 :nth-child(even) 伪类实现斑马线表格 :contentReference[oaicite:7]{index=7} */
 }
 
-/* 可选：鼠标悬停高亮当前行 */
+/*鼠标悬停高亮当前行 */
 .active-users-container tbody tr:hover {
     background-color: #e6e6e6; /* 简单交互反馈，提升可用性 :contentReference[oaicite:8]{index=8} */
 }
+
+/* 样式 */
+.clickable {
+    color: #007bff;
+    cursor: pointer;
+    text-decoration: underline; /* 看起来像链接 */
+  }
+
+
+.user-danmaku-table {
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.user-danmaku-table h4 {
+    margin-bottom: 10px;
+}
+
+.danmaku-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.danmaku-table th, .danmaku-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+  

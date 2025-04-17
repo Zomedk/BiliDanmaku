@@ -19,6 +19,9 @@ new Vue({
         sortOrder: 'asc',  // 排序顺序，默认升序
         pageInput: null,  // 页码输入框的值
         activeUsers: [], // 新增：存储活跃用户排行榜
+        selectedUserUid: '',  // 当前选中的用户 UID
+        userDanmakuList: [],  // 当前选中用户的弹幕列表
+        showUserDanmakuModal: false,  // 控制弹幕展示框显示与否
         tabs: [
             { id: 'video-info', name: '视频信息' },  // 视频信息 tab
             { id: 'danmaku', name: '弹幕列表' },  // 弹幕列表 tab
@@ -212,6 +215,29 @@ new Vue({
             this.isLoading = false;
             }
         },
+        // 新增：获取活跃用户弹幕
+        async fetchUserDanmaku(userHash) {
+            try {
+              const res = await axios.get('/api/user_danmaku', {
+                params: {
+                  hash: userHash,
+                  bv: this.bvInput
+                }
+              });
+              const { uid, danmaku } = res.data;
+              if (!uid) {
+                alert('哈希转 UID 失败');
+                return;
+              }
+              this.selectedUserUid = uid;
+              this.userDanmakuList = danmaku;
+              this.showUserDanmakuModal = true; // 控制弹窗展示
+            } catch (err) {
+              console.error('获取用户弹幕失败', err);
+              alert('获取用户弹幕失败');
+            }
+          },
+          
         // 获取情感分析数据
         async fetchSentiment() {
             try {
