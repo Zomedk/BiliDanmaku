@@ -1,3 +1,8 @@
+// 检查登录状态
+if (!localStorage.getItem('isLoggedIn')) {
+    window.location.href = '/login.html';
+}
+
 new Vue({
     el: '#app',  // Vue 实例挂载在页面上 id 为 app 的元素上
     data: {

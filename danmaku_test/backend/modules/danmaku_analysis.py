@@ -112,7 +112,6 @@ def generate_word_cloud(danmaku_data, logger=None):
         logger.debug("Word cloud image generated successfully")
     return f'data:image/png;base64,{img_base64}'  # 返回 base64 格式的图片
 
-# 生成弹幕时间分布图
 def generate_danmaku_timeline(danmaku_list, logger=None):
     try:
         # 定义字体路径，用于支持中文和表情符号显示
@@ -127,7 +126,6 @@ def generate_danmaku_timeline(danmaku_list, logger=None):
         timeline = {}
         for danmaku in danmaku_list:
             if not isinstance(danmaku, dict):
-                # 记录无效弹幕数据并跳过
                 logger.error(f"Invalid danmaku item: type={type(danmaku)}, value={danmaku}")
                 continue
             # 获取弹幕时间，默认为'00:00:00'
@@ -141,23 +139,27 @@ def generate_danmaku_timeline(danmaku_list, logger=None):
         x = sorted(timeline.keys())
         y = [timeline[min_] for min_ in x]
 
-        # 创建平滑曲线：生成500个均匀分布的x值
-        x_new = np.linspace(min(x), max(x), 500)
-        # 使用三次样条插值生成平滑曲线
-        spline = make_interp_spline(x, y, k=3)
-        y_smooth = spline(x_new)
-        # 确保弹幕数量非负，修复样条插值可能产生的负值
-        y_smooth = np.maximum(y_smooth, 0)
-
         # 创建画布和坐标轴，设置尺寸为12x6
         fig, ax = plt.subplots(figsize=(9, 6))
         # 设置坐标轴和画布背景色
         ax.set_facecolor('#fef3f3')
         fig.patch.set_facecolor('#fef3f3')
 
-        # 绘制填充区域和曲线
-        ax.fill_between(x_new, y_smooth, color='#fbc2eb', alpha=0.4)  # 粉色填充
-        ax.plot(x_new, y_smooth, color='#f67070', linewidth=2.5)  # 红色曲线
+        # 检查数据点数量
+        if len(x) < 4:
+            # 数据点不足，使用简单折线图
+            if logger:
+                logger.warning(f"数据点不足（{len(x)}），使用简单折线图")
+            ax.plot(x, y, color='#f67070', linewidth=2.5)
+            ax.fill_between(x, y, color='#fbc2eb', alpha=0.4)
+        else:
+            # 数据点足够，使用平滑曲线
+            x_new = np.linspace(min(x), max(x), 500)
+            spline = make_interp_spline(x, y, k=3)
+            y_smooth = spline(x_new)
+            y_smooth = np.maximum(y_smooth, 0)
+            ax.fill_between(x_new, y_smooth, color='#fbc2eb', alpha=0.4)
+            ax.plot(x_new, y_smooth, color='#f67070', linewidth=2.5)
 
         # 设置坐标轴边框样式
         for spine in ax.spines.values():
@@ -165,8 +167,7 @@ def generate_danmaku_timeline(danmaku_list, logger=None):
             spine.set_linewidth(1.5)
 
         # 加载字体属性
-        font_prop = FontProperties(fname=FONT_PATH)  # 中文字体
-        emoji_font = FontProperties(fname=EMOJI_FONT_PATH)  # 表情符号字体（未使用）
+        font_prop = FontProperties(fname=FONT_PATH)
 
         # 设置标题和轴标签
         ax.set_title("弹幕随时间分布图", fontsize=18, fontproperties=font_prop, color='#444')
@@ -177,40 +178,34 @@ def generate_danmaku_timeline(danmaku_list, logger=None):
         ax.tick_params(colors='#999', labelsize=10)
         ax.grid(alpha=0.3)
 
-        # 检测峰值点（关键时刻）
-        peaks, _ = find_peaks(y_smooth, distance=30, prominence=2)
-        peak_points = [(x_new[i], y_smooth[i]) for i in peaks]
-        # 找到最大值点，确保包含在峰值列表中
-        max_index = np.argmax(y_smooth)
-        max_point = (x_new[max_index], y_smooth[max_index])
-        if max_point not in peak_points:
-            peak_points.append(max_point)
-
-        # 选择最大的三个峰值点
-        top_peaks = sorted(peak_points, key=lambda p: p[1], reverse=True)[:3]
-        for x_val, y_val in top_peaks:
-            # 在峰值点绘制金色圆点
-            ax.scatter(x_val, y_val, color='gold', s=150, edgecolors='white', zorder=5)
-            # 添加“关键时刻”标注
-            ax.text(x_val + 0.5, y_val + 5, '关键时刻', fontsize=13,
-                    fontproperties=font_prop, color='crimson')
+        # 检测峰值点（仅当数据点足够时）
+        if len(x) >= 4:
+            peaks, _ = find_peaks(y_smooth, distance=30, prominence=2)
+            peak_points = [(x_new[i], y_smooth[i]) for i in peaks]
+            max_index = np.argmax(y_smooth)
+            max_point = (x_new[max_index], y_smooth[max_index])
+            if max_point not in peak_points:
+                peak_points.append(max_point)
+            top_peaks = sorted(peak_points, key=lambda p: p[1], reverse=True)[:3]
+            for x_val, y_val in top_peaks:
+                ax.scatter(x_val, y_val, color='gold', s=150, edgecolors='white', zorder=5)
+                ax.text(x_val + 0.5, y_val + 5, '关键时刻', fontsize=13,
+                        fontproperties=font_prop, color='crimson')
 
         # 将图像保存到内存缓冲区
         buf = BytesIO()
         plt.tight_layout()
         plt.savefig(buf, format='png', facecolor=fig.get_facecolor())
-        plt.close(fig)  # 关闭画布，释放内存
+        plt.close(fig)
         buf.seek(0)
 
         # 将图像转换为base64编码
         img_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
         if logger:
             logger.debug("Danmaku timeline chart generated successfully")
-        # 返回图像的base64数据URL
         return f"data:image/png;base64,{img_base64}"
 
     except Exception as e:
-        # 记录错误并抛出异常
         if logger:
             logger.error(f"生成时间分布图失败: {str(e)}")
         raise

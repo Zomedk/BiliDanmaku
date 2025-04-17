@@ -12,6 +12,7 @@ from modules.danmaku_analysis import calculate_word_frequency, generate_word_clo
 from modules.sentiment_analysis import analyze_sentiment
 import datetime  # 时间相关的操作要用到
 from modules.hash_to_uid import hash_to_uid
+from modules.auth import login_user, register_user
 # -------------------- 初始化 Flask 应用 --------------------
 app = Flask(__name__)
 
@@ -31,6 +32,10 @@ headers = {
 # 打开网站首页（前端是静态页面）
 @app.route('/')
 def serve_index():
+    return send_from_directory('../frontend', 'login.html')  # 改为返回login.html
+
+@app.route('/index.html')
+def serve_main():
     return send_from_directory('../frontend', 'index.html')
 
 # 访问其他静态资源（比如 js、css 文件）
@@ -276,6 +281,30 @@ def user_uid():
     if uid == -1:
         return jsonify({'uid': None})
     return jsonify({'uid': uid})
+
+# 登录接口
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.json
+    username = data.get('username', '')
+    password = data.get('password', '')
+    if not username or not password:
+        return jsonify({'error': '用户名或密码不能为空'}), 400
+    if login_user(username, password):
+        return jsonify({'message': '登录成功'})
+    return jsonify({'error': '用户名或密码错误'}), 401
+
+# 注册接口
+@app.route('/api/register', methods=['POST'])
+def register():
+    data = request.json
+    username = data.get('username', '')
+    password = data.get('password', '')
+    if not username or not password:
+        return jsonify({'error': '用户名或密码不能为空'}), 400
+    if register_user(username, password):
+        return jsonify({'message': '注册成功'})
+    return jsonify({'error': '用户名已存在'}), 400
 
 # -------------------- 启动 Flask 应用 --------------------
 if __name__ == '__main__':
