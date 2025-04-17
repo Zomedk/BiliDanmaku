@@ -103,7 +103,7 @@ def analyze_sentiment(danmaku_list):
         font = FontProperties(fname=font_path, size=12)
 
         # 生成图表：情感分布的饼图和柱状图
-        plt.figure(figsize=(12, 5))  # 设置画布大小
+        plt.figure(figsize=(5, 5))  # 设置画布大小
         labels = ['积极', '消极', '中性']  # 情感类型标签
         sizes = [sentiment_counts.get('positive', 0), sentiment_counts.get('negative', 0), sentiment_counts.get('neutral', 0)]  # 每种情感的数量
         colors = ['#1f77b4', '#ff7f0e', '#2ca02c']  # 饼图的颜色

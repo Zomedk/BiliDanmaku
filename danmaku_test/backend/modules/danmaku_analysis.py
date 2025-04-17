@@ -150,7 +150,7 @@ def generate_danmaku_timeline(danmaku_list, logger=None):
         y_smooth = np.maximum(y_smooth, 0)
 
         # 创建画布和坐标轴，设置尺寸为12x6
-        fig, ax = plt.subplots(figsize=(12, 6))
+        fig, ax = plt.subplots(figsize=(9, 6))
         # 设置坐标轴和画布背景色
         ax.set_facecolor('#fef3f3')
         fig.patch.set_facecolor('#fef3f3')
@@ -329,7 +329,7 @@ def generate_danmaku_time_proportion(danmaku_list, logger=None):
         app_logger.error(f"生成弹幕时间占比图失败: {str(e)}")  # 捕获异常并记录错误日志
         raise  # 重新抛出异常
 
-    
+
 def calculate_active_users(danmaku_data, top_n=10):
     """
     统计弹幕数据中各发送者（hash）的发送次数，返回前 top_n 名列表。
