@@ -112,33 +112,33 @@ new Vue({
                 this.isLoading = false;
             });
         },
-        async fetchUserDanmaku(hash = null) {
-            if (this.isLoading) return;
+        async fetchUserDanmaku() {
+            if (this.isLoading || !this.userHashInput) return;
             this.isLoading = true;
             this.showUserDanmakuResult = true;
+            
             try {
-                const userHash = hash || this.userHashInput;
-                console.log("Fetching user danmaku for hash:", userHash);
-                const res = await axios.get('http://127.0.0.1:5000/api/user_danmaku', {
+                const response = await axios.get('http://127.0.0.1:5000/api/user_danmaku', {
                     params: {
-                        hash: userHash,
+                        hash: this.userHashInput,
                         bv: this.bvInput
                     }
                 });
-                const { uid, danmaku } = res.data;
-                if (!uid) {
-                    alert('哈希转 UID 失败');
-                    this.userDanmakuList = [];
-                    this.selectedUserUid = '';
-                } else {
-                    this.selectedUserUid = uid;
-                    this.userDanmakuList = danmaku || [];
+                
+                if (response.data.error) {
+                    throw new Error(response.data.error);
                 }
-            } catch (err) {
-                console.error('获取用户弹幕失败:', err);
-                alert('获取用户弹幕失败');
+        
+                this.selectedUserUid = response.data.uid;
+                this.userDanmakuList = response.data.danmaku || [];
+                
+                if (this.userDanmakuList.length === 0) {
+                    this.$message.warning('未找到该用户的弹幕记录');
+                }
+            } catch (error) {
+                console.error('用户弹幕查询失败:', error);
+                this.$message.error(`查询失败: ${error.message}`);
                 this.userDanmakuList = [];
-                this.selectedUserUid = '';
             } finally {
                 this.isLoading = false;
             }

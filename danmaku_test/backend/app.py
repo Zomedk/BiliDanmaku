@@ -263,7 +263,35 @@ def danmaku_time_proportion():
     except Exception as e:
         return jsonify({'error': f"生成时间占比图失败: {str(e)}"}), 400
     
+# -------------------- 根据哈希值获取用户弹幕接口 --------------------
+@app.route('/api/user_danmaku', methods=['GET'])
+def get_user_danmaku():
+    try:
+        user_hash = request.args.get('hash', '')
+        bv_input = request.args.get('bv', '')
+        
+        if not user_hash or not bv_input:
+            raise ValueError("缺少必要参数：哈希值或BV号")
 
+        # 获取视频CID（只需一次）
+        bv = handle_bv_input(bv_input)
+        cid = get_video_cid(bv)
+        
+        # 获取全部弹幕数据
+        all_danmaku = fetch_danmaku(cid)
+        
+        # 过滤指定哈希的弹幕
+        filtered = [d for d in all_danmaku if d.get('hash') == user_hash]
+        
+
+        return jsonify({
+            'hash': user_hash,
+            'danmaku': filtered
+        })
+        
+    except Exception as e:
+        app_logger.error(f"用户弹幕查询失败: {str(e)}")
+        return jsonify({'error': str(e)}), 400
 
 @app.route('/api/active_users', methods=['GET'])
 def active_users():
