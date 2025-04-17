@@ -411,3 +411,23 @@ body {
     font-size: 1.5em;
     margin-bottom: 10px;
 }
+
+.distribution-image {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 添加轻微阴影，增强质感 */
+}
+.length-stats {
+    text-align: center;
+    background: #F5F5F5; /* 匹配图表背景 */
+    padding: 20px;
+    border-radius: 8px;
+}
+.section-title {
+    font-size: 1.5em;
+    color: #333333;
+    margin-bottom: 10px;
+}
