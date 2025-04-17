@@ -8,51 +8,31 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <style>
-        .login-container {
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            text-align: center;
-        }
-        .input-field {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .btn-primary {
-            padding: 10px 20px;
-            background-color: #00a1d6;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .btn-primary:hover {
-            background-color: #0081b3;
-        }
-        .error {
-            color: red;
-            margin-top: 10px;
-        }
-    </style>
 </head>
 <body>
     <div id="login-app" class="login-container">
-        <h2>登录</h2>
-        <input v-model="username" placeholder="用户名" class="input-field">
-        <input v-model="password" type="password" placeholder="密码" class="input-field">
-        <button @click="login" class="btn-primary" :disabled="isLoading">
-            {{ isLoading ? '登录中...' : '登录' }}
-        </button>
-        <button @click="register" class="btn-primary" :disabled="isLoading">
-            {{ isLoading ? '注册中...' : '注册' }}
-        </button>
-        <p v-if="error" class="error">{{ error }}</p>
+        <h2 class="login-title">欢迎使用B站分析工具</h2>
+        <div class="input-group">
+            <div class="input-wrapper">
+                <span class="input-icon">👤</span>
+                <input v-model="username" placeholder="请输入用户名" class="input-field" required>
+            </div>
+            <div class="input-wrapper">
+                <span class="input-icon">🔒</span>
+                <input v-model="password" type="password" placeholder="请输入密码" class="input-field" required>
+            </div>
+        </div>
+        <div class="button-group">
+            <button @click="login" class="btn-primary" :disabled="isLoading">
+                <span v-if="isLoading" class="loading-spinner"></span>
+                {{ isLoading ? '登录中...' : '立即登录' }}
+            </button>
+            <button @click="register" class="btn-secondary" :disabled="isLoading">
+                <span v-if="isLoading" class="loading-spinner"></span>
+                {{ isLoading ? '注册中...' : '立即注册' }}
+            </button>
+        </div>
+        <p v-if="error" class="error-message">登录失败：{{ error }}</p>
     </div>
     <script>
         new Vue({
@@ -76,7 +56,7 @@
                         window.location.href = '/index.html';
                     })
                     .catch(error => {
-                        this.error = error.response?.data?.error || '登录失败';
+                        this.error = error.response?.data?.error || '请检查用户名或密码';
                     })
                     .finally(() => {
                         this.isLoading = false;
