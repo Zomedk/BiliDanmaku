@@ -264,21 +264,18 @@ def active_users():
     top_users = calculate_active_users(danmaku_data, top_n=10)
     return jsonify({'active_users': top_users})
 
-@app.route('/api/user_danmaku', methods=['GET'])
-def user_danmaku():
+@app.route('/api/user_uid', methods=['GET'])
+def user_uid():
     user_hash = request.args.get('hash', '')
     bv_input = request.args.get('bv', '')
     bv = handle_bv_input(bv_input)
     cid = get_video_cid(bv)
-    danmaku_data = fetch_danmaku(cid)
+    _ = fetch_danmaku(cid)  # 这里只是为了和前端一致，实际不需要弹幕
 
     uid = hash_to_uid(user_hash)
     if uid == -1:
-        return jsonify({'uid': None, 'danmaku': []})
-
-    # 过滤该用户发的弹幕
-    user_danmaku = [d for d in danmaku_data if d.get('uid') == uid]
-    return jsonify({'uid': uid, 'danmaku': user_danmaku})
+        return jsonify({'uid': None})
+    return jsonify({'uid': uid})
 
 # -------------------- 启动 Flask 应用 --------------------
 if __name__ == '__main__':

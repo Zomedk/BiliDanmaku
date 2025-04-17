@@ -22,6 +22,8 @@ new Vue({
         selectedUserUid: '',  // 当前选中的用户 UID
         userDanmakuList: [],  // 当前选中用户的弹幕列表
         showUserDanmakuModal: false,  // 控制弹幕展示框显示与否
+        userHashInput: '',  // 新增：用户输入的哈希值
+        showUserDanmakuResult: false,  // 新增：控制是否显示用户弹幕查询结果
         tabs: [
             { id: 'video-info', name: '视频信息' },  // 视频信息 tab
             { id: 'danmaku', name: '弹幕列表' },  // 弹幕列表 tab
@@ -103,6 +105,38 @@ new Vue({
             .finally(() => {
                 this.isLoading = false;  // 完成加载，停止加载状态
             });
+        },
+        // 新增：获取用户弹幕
+        async fetchUserDanmaku(hash = null) {
+            if (this.isLoading) return;
+            this.isLoading = true;
+            this.showUserDanmakuResult = true; // 显示查询结果区域
+            try {
+                const userHash = hash || this.userHashInput; // 使用传入的哈希或输入框的哈希
+                console.log("Fetching user danmaku for hash:", userHash);
+                const res = await axios.get('http://127.0.0.1:5000/api/user_danmaku', {
+                    params: {
+                        hash: userHash,
+                        bv: this.bvInput
+                    }
+                });
+                const { uid, danmaku } = res.data;
+                if (!uid) {
+                    alert('哈希转 UID 失败');
+                    this.userDanmakuList = [];
+                    this.selectedUserUid = '';
+                } else {
+                    this.selectedUserUid = uid;
+                    this.userDanmakuList = danmaku || [];
+                }
+            } catch (err) {
+                console.error('获取用户弹幕失败:', err);
+                alert('获取用户弹幕失败');
+                this.userDanmakuList = [];
+                this.selectedUserUid = '';
+            } finally {
+                this.isLoading = false;
+            }
         },
         // 切换页面
         changePage(page) {
@@ -201,43 +235,40 @@ new Vue({
                 this.isLoading = false;  // 完成加载
             }
         },
-        // 新增：获取活跃用户排行榜
+        // 获取活跃用户排行榜
         async fetchActiveUsers() {
             if (this.isLoading) return;
             this.isLoading = true;
             try {
-            const res = await axios.get('/api/active_users', { params: { bv: this.bvInput } });
-            this.activeUsers = res.data.active_users || [];
+                const res = await axios.get('http://127.0.0.1:5000/api/active_users', { params: { bv: this.bvInput } });
+                this.activeUsers = res.data.active_users || [];
             } catch (err) {
-            console.error('获取活跃用户失败:', err);
-            alert('活跃用户排行榜获取失败');
+                console.error('获取活跃用户失败:', err);
+                alert('活跃用户排行榜获取失败');
             } finally {
-            this.isLoading = false;
+                this.isLoading = false;
             }
         },
         // 新增：获取活跃用户弹幕
-        async fetchUserDanmaku(userHash) {
+        async fetchUserUid(userHash) {
             try {
-              const res = await axios.get('/api/user_danmaku', {
+              const res = await axios.get('http://127.0.0.1:5000/api/user_uid', {
                 params: {
                   hash: userHash,
                   bv: this.bvInput
                 }
               });
-              const { uid, danmaku } = res.data;
+              const { uid } = res.data;
               if (!uid) {
                 alert('哈希转 UID 失败');
                 return;
               }
-              this.selectedUserUid = uid;
-              this.userDanmakuList = danmaku;
-              this.showUserDanmakuModal = true; // 控制弹窗展示
+              this.selectedUserUid = uid; // 设置 UID
             } catch (err) {
-              console.error('获取用户弹幕失败', err);
-              alert('获取用户弹幕失败');
+              console.error('获取 UID 失败', err);
+              alert('获取 UID 失败');
             }
           },
-          
         // 获取情感分析数据
         async fetchSentiment() {
             try {
@@ -282,15 +313,6 @@ new Vue({
             } finally {
                 this.isLoading = false;  // 完成加载
             }
-        },
-        // 切换页面时获取新数据
-        changePage(page) {
-            if (page < 1 || page > this.totalPages) {
-                alert(`页码超出范围（1-${this.totalPages}）`);  // 页码超出范围
-                return;
-            }
-            this.currentPage = page;  // 设置当前页
-            this.fetchDanmaku();  // 获取该页数据
         }
     },
     computed: {

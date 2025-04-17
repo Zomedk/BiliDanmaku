@@ -71,6 +71,36 @@
                             {{ isLoading ? '搜索中...' : '搜索' }}
                         </button>
                     </div>
+                    <!-- 新增：查询用户弹幕 -->
+                    <div class="input-group">
+                        <input v-model="userHashInput" placeholder="请输入用户哈希值查询弹幕" class="input-field">
+                        <button @click="fetchUserDanmaku" class="btn-primary" :disabled="isLoading || !userHashInput">
+                            {{ isLoading ? '查询中...' : '查询用户弹幕' }}
+                        </button>
+                    </div>
+                    <!-- 新增：展示用户弹幕 -->
+                    <div v-if="userDanmakuList.length > 0" class="danmaku-list">
+                        <h3>用户 {{ selectedUserUid || '未知UID' }} 的弹幕</h3>
+                        <table class="danmaku-table">
+                            <thead>
+                                <tr>
+                                    <th>弹幕时间</th>
+                                    <th>发送时间</th>
+                                    <th>内容</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="d in userDanmakuList" :key="`${d.time}-${d.send_time}-${d.content}`">
+                                    <td>{{ d.time }}</td>
+                                    <td>{{ d.send_time }}</td>
+                                    <td>{{ d.content }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div v-else-if="userHashInput && !userDanmakuList.length && showUserDanmakuResult">
+                        <p>未找到用户 {{ userHashInput }} 的弹幕。</p>
+                    </div>
                     <!-- 弹幕表格展示 -->
                     <div v-if="danmakuData.length > 0" class="danmaku-list">
                         <h3>{{ searchKeyword ? '搜索结果' : '弹幕列表' }}</h3>
@@ -152,37 +182,34 @@
                     </div>
                     <div v-else><p>暂无时间分布图，请点击“生成时间分布图”。</p></div>
                     <!-- 新增：活跃用户排行榜 -->
+                    <!-- 活跃用户排行榜 -->
                     <div class="input-group" style="margin-top: 24px;">
                         <button @click="fetchActiveUsers" class="btn-primary" :disabled="isLoading">
-                            {{ isLoading ? '加载中...' : '获取活跃用户排行榜' }}
+                        {{ isLoading ? '加载中...' : '获取活跃用户排行榜' }}
                         </button>
                     </div>
-
+                    
                     <div v-if="activeUsers.length > 0" class="active-users-container">
                         <h4>活跃用户排行榜</h4>
                         <table class="word-frequency-table">
-                            <thead>
-                                <tr><th>排名</th><th>用户哈希</th><th>弹幕数</th></tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(u, idx) in activeUsers" :key="u.user_hash">
-                                    <td>{{ idx + 1 }}</td>
-                                    <td @click="fetchUserDanmaku(u.user_hash)" class="clickable">{{ u.user_hash }}</td>
-                                    <td>{{ u.count }}</td>
-                                </tr>
-                            </tbody>
+                        <thead>
+                            <tr><th>排名</th><th>用户哈希</th><th>弹幕数</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(u, idx) in activeUsers" :key="u.user_hash">
+                            <td>{{ idx + 1 }}</td>
+                            <td @click="fetchUserUid(u.user_hash)" class="clickable">{{ u.user_hash }}</td>
+                            <td>{{ u.count }}</td>
+                            </tr>
+                        </tbody>
                         </table>
                     </div>
-
-                    <!-- 弹幕展示区 -->
-                    <div v-if="showUserDanmakuModal">
-                        <h4>UID：{{ selectedUserUid }} 的弹幕</h4>
-                        <ul class="danmaku-list">
-                            <li v-for="(d, idx) in userDanmakuList" :key="idx">
-                                {{ d.text }} <span style="color: gray;">[{{ d.time }}]</span>
-                            </li>
-                        </ul>
+                    
+                    <!-- 显示 UID（不展示弹幕）-->
+                    <div v-if="selectedUserUid">
+                        <h4>UID：{{ selectedUserUid }}</h4>
                     </div>
+  
                   
                     <p>更多功能（观众IP属地统计，情感分析等）敬请期待。</p>
                 </div>
