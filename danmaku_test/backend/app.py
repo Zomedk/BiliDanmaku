@@ -34,6 +34,10 @@ headers = {
 def serve_index():
     return send_from_directory('../frontend', 'login.html')  # 改为返回login.html
 
+@app.route('/static/covers/<path:filename>')
+def serve_cover_image(filename):
+    return send_from_directory('static/covers', filename)
+
 @app.route('/index.html')
 def serve_main():
     return send_from_directory('../frontend', 'index.html')

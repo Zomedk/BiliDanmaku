@@ -54,11 +54,13 @@ def get_video_info(bv):
             formatted_duration = time.strftime("%H:%M:%S", time.gmtime(video_duration))
             app_logger.debug(f"Formatted duration: {formatted_duration}")
 
-            # 下载封面图片（函数需你自己实现）
+            # 下载封面图片并获取相对路径
             cover_path = download_cover_image(cover)
+            # 将本地路径转换为相对 URL
+            cover_url = '/static/covers/video_cover.jpg'
 
-            # 返回视频标题、封面本地路径、UP主昵称、主页链接、时长（秒）、格式化时长
-            return title, cover_path, up_name, up_link, video_duration, formatted_duration
+            # 返回视频标题、封面相对 URL、UP主昵称、主页链接、时长（秒）、格式化时长
+            return title, cover_url, up_name, up_link, video_duration, formatted_duration
 
         else:
             # 非200响应时抛出异常

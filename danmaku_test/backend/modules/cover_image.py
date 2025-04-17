@@ -4,6 +4,7 @@ import requests
 # 下载封面图片到本地
 def download_cover_image(cover_url):
     cover_path = 'D:/Lernen/danmaku_test/danmaku_test/backend/static/covers/video_cover.jpg'  # 本地保存路径
+    cover_url_path = '/static/covers/video_cover.jpg'  # 相对 URL
     
     # 创建目录（如果不存在）
     if not os.path.exists(os.path.dirname(cover_path)):
@@ -14,6 +15,6 @@ def download_cover_image(cover_url):
     if response.status_code == 200:
         with open(cover_path, 'wb') as f:
             f.write(response.content)
-        return cover_path
+        return cover_url_path  # 返回相对 URL
     else:
         raise Exception(f"无法下载封面图片，状态码：{response.status_code}")
