@@ -542,7 +542,7 @@ def get_danmaku_summary(danmaku_list, logger=None):
         )
         try:
             response = client.chat.completions.create(
-                model="deepseek-chat",
+                model="deepseek-reasoner",
                 messages=[
                     {"role": "system", "content": "你是一个乐于助人的助手"},
                     {"role": "user", "content": prompt}
