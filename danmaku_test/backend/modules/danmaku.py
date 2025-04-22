@@ -4,7 +4,7 @@ from .utils import seconds_to_hms  # 引入秒转时分秒的工具函数
 from config import Config  # 引入配置文件
 from modules.logger import app_logger  # 引入日志模块，记录错误和调试信息
 import datetime
-
+import logging
 # 请求头，模仿浏览器的请求
 headers = {
     'User-Agent': Config.USER_AGENT  # 从配置文件中获取 User-Agent
@@ -35,6 +35,7 @@ def get_video_cid(bv):
 # 爬取弹幕数据的函数
 def fetch_danmaku(cid):
     danmaku_url = f'https://comment.bilibili.com/{cid}.xml'  # 根据 cid 获取弹幕 XML 数据的 URL
+    
     try:
         # 发送请求获取弹幕 XML 数据
         res = requests.get(danmaku_url, headers=headers)

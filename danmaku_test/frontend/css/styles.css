@@ -431,3 +431,30 @@ body {
     color: #333333;
     margin-bottom: 10px;
 }
+
+.no-data {
+    color: #023e8a;
+    text-align: center;
+}
+
+.summary-stats {
+    margin-top: 20px;
+    background: #e0f7fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.summary-text {
+    color: #023e8a;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.btn-primary {
+    background: #0077b6;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #00b4d8;
+}

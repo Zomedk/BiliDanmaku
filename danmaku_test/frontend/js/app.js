@@ -39,7 +39,8 @@ new Vue({
             { id: 'sentiment', name: '情感分析' },
             { id: 'time-proportion', name: '弹幕时间占比' },
             { id: 'danmaku-length', name: '长度分布' },
-            { id: 'danmaku-color', name: '颜色分布' }
+            { id: 'danmaku-color', name: '颜色分布' },
+            { id: 'danmaku-summary', name: '弹幕总结' } 
         ]
     },
     methods: {
@@ -353,6 +354,31 @@ new Vue({
                 const errorMsg = error.response && error.response.data.error 
                     ? `获取弹幕颜色分布失败：${error.response.data.error}`
                     : `获取弹幕颜色分布失败：${error.message}`;
+                alert(errorMsg);
+                console.error('Error:', error);
+            } finally {
+                this.isLoading = false;
+            }
+        },
+        async fetchDanmakuSummary() {
+            if (!this.videoInfo || !this.videoInfo.cid) {
+                alert('请先查询视频信息');
+                this.isLoading = false;
+                return;
+            }
+            try {
+                this.isLoading = true;
+                const response = await axios.post('http://127.0.0.1:5000/api/danmaku_summary', { cid: this.videoInfo.cid });
+                if (response.data.error) {
+                    alert(`获取弹幕总结失败：${response.data.error}`);
+                } else {
+                    console.log('Danmaku summary:', response.data);
+                    this.danmakuSummary = response.data;
+                }
+            } catch (error) {
+                const errorMsg = error.response && error.response.data.error 
+                    ? `获取弹幕总结失败：${error.response.data.error}`
+                    : `获取弹幕总结失败：${error.message}`;
                 alert(errorMsg);
                 console.error('Error:', error);
             } finally {

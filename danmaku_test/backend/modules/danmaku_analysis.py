@@ -15,7 +15,11 @@ from modules.logger import app_logger  # 引入日志模块，方便调试和记
 from collections import Counter
 import logging
 from matplotlib import font_manager
-
+from openai import OpenAI
+import json
+import requests
+from dotenv import load_dotenv
+load_dotenv()
 # 停用词文件路径
 STOPWORDS_PATH = r'D:\Lernen\danmaku_test\danmaku_test\backend\stopwords_cn.txt'
 # 字体文件路径
@@ -495,3 +499,84 @@ def calculate_active_users(danmaku_data, top_n=10):
     most_common = counts.most_common(top_n)  # 返回 [(hash, count), ...] :contentReference[oaicite:3]{index=3}
     # 4. 格式化输出
     return [{'user_hash': h, 'count': c} for h, c in most_common]
+import openai
+def get_danmaku_summary(danmaku_list, logger=None):
+    try:
+        if not danmaku_list or not isinstance(danmaku_list, list):
+            if logger:
+                logger.error("弹幕数据为空或格式错误")
+            raise ValueError("弹幕数据为空或格式错误")
+
+        if logger:
+            logger.debug(f"Processing {len(danmaku_list)} danmaku entries for summary")
+
+        # 格式化弹幕数据，使用 'hash' 作为发送者字段
+        danmaku_text = ""
+        for d in danmaku_list:
+            if not isinstance(d, dict) or 'content' not in d or 'send_time' not in d or 'hash' not in d:
+                if logger:
+                    logger.warning(f"Invalid danmaku item: {d}, skipping")
+                continue
+            send_time = d['send_time']
+            content = d['content'] or ''
+            sender = d['hash'] or '匿名'
+            danmaku_text += f"时间: {send_time}, 发送者: {sender}, 内容: {content}\n"
+
+        if not danmaku_text:
+            if logger:
+                logger.error("没有有效的弹幕数据用于总结")
+            raise ValueError("没有有效的弹幕数据用于总结")
+
+        # DeepSeek API 调用，基于用户成功运行的代码
+        api_key = os.getenv("DEEPSEEK_API_KEY")
+        if not api_key:
+            if logger:
+                logger.error("未配置 DeepSeek API 密钥")
+            raise ValueError("未配置 DeepSeek API 密钥")
+
+        client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+        prompt = (
+            "你是一个专业的弹幕分析助手。请根据以下弹幕数据，生成一份简洁的总结，突出关键内容、时间段和发送者的特点。总结应包括主要话题、情绪倾向（如积极、消极、幽默）以及重要的时间点。数据格式为：时间, 发送者, 内容。\n\n"
+            f"{danmaku_text}\n"
+            "请以简洁的段落形式输出总结，控制在 200 字以内。"
+        )
+        try:
+            response = client.chat.completions.create(
+                model="deepseek-chat",
+                messages=[
+                    {"role": "system", "content": "你是一个乐于助人的助手"},
+                    {"role": "user", "content": prompt}
+                ],
+                stream=False
+            )
+            if not response.choices or not response.choices[0].message.content:
+                if logger:
+                    logger.error("DeepSeek API 返回无效响应")
+                raise ValueError("DeepSeek API 返回无效响应")
+            summary = response.choices[0].message.content
+        except openai.APIConnectionError as e:
+            if logger:
+                logger.error(f"Connection error: {str(e)}")
+            raise ValueError(f"Connection error: {str(e)}")
+        except openai.AuthenticationError as e:
+            if logger:
+                logger.error(f"Authentication error: {str(e)}")
+            raise ValueError(f"Authentication error: {str(e)}")
+        except openai.RateLimitError as e:
+            if logger:
+                logger.error(f"Rate limit exceeded: {str(e)}")
+            raise ValueError(f"Rate limit exceeded: {str(e)}")
+        except Exception as e:
+            if logger:
+                logger.error(f"Unexpected error: {type(e).__name__} - {str(e)}")
+            raise ValueError(f"Unexpected error: {type(e).__name__} - {str(e)}")
+
+        if logger:
+            logger.debug(f"Danmaku summary generated: {summary[:50]}...")
+
+        return {"summary": summary}
+
+    except Exception as e:
+        if logger:
+            logger.error(f"生成弹幕总结失败: {str(e)}")
+        raise

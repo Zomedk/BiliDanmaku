@@ -8,11 +8,16 @@ from modules.danmaku import fetch_danmaku
 from modules.cover_image import download_cover_image
 from modules.utils import handle_bv_input
 from modules.logger import app_logger
-from modules.danmaku_analysis import calculate_word_frequency, generate_word_cloud, generate_danmaku_timeline, generate_danmaku_time_proportion, calculate_active_users, get_danmaku_length_distribution, get_danmaku_color_distribution
+from modules.danmaku_analysis import calculate_word_frequency, generate_word_cloud, generate_danmaku_timeline, generate_danmaku_time_proportion, calculate_active_users, get_danmaku_length_distribution, get_danmaku_color_distribution, get_danmaku_summary
 from modules.sentiment_analysis import analyze_sentiment
 import datetime  # 时间相关的操作要用到
 from modules.hash_to_uid import hash_to_uid
 from modules.auth import login_user, register_user
+from modules.logger import app_logger  # 引入日志模块，方便调试和记录错误
+from collections import Counter
+import logger
+from dotenv import load_dotenv
+load_dotenv()
 # -------------------- 初始化 Flask 应用 --------------------
 app = Flask(__name__)
 
@@ -372,6 +377,22 @@ def danmaku_color():
     except Exception as e:
         app_logger.error(f"获取弹幕颜色分布失败: {str(e)}")
         return jsonify({'error': str(e)}), 500
+    
+
+@app.route('/api/danmaku_summary', methods=['POST'])
+def get_danmaku_summary_endpoint():
+    try:
+        data = request.get_json()
+        cid = data.get('cid')
+        if not cid:
+            return jsonify({'error': '缺少 CID'}), 400
+        danmaku_list = fetch_danmaku(cid)  # 假设已更新 fetch_danmaku
+        result = get_danmaku_summary(danmaku_list, app_logger)
+        return jsonify(result)
+    except Exception as e:
+        app_logger.error(f"获取弹幕总结失败: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+    
 # -------------------- 启动 Flask 应用 --------------------
 if __name__ == '__main__':
     app.run(debug=True, port=5000)  # debug=True 可以看到详细错误信息（开发阶段用）

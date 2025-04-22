@@ -265,6 +265,21 @@
                     </div>
                     <div v-else><p class="no-data">暂无颜色分布数据，请点击“查询颜色分布”。</p></div>
                 </div>
+                <!-- 弹幕总结 -->
+                <div v-show="activeTab === 'danmaku-summary'" class="tab-pane">
+                    <div class="input-group">
+                        <button @click="fetchDanmakuSummary" class="btn-primary" :disabled="isLoading">
+                            {{ isLoading ? '加载中...' : '查询弹幕总结' }}
+                        </button>
+                    </div>
+                    <div v-if="danmakuSummary && danmakuSummary.summary" class="summary-stats">
+                        <h3 class="section-title">弹幕总结</h3>
+                        <p class="summary-text">{{ danmakuSummary.summary }}</p>
+                    </div>
+                    <div v-else>
+                        <p class="no-data">暂无弹幕总结数据，请点击“查询弹幕总结”。</p>
+                    </div>
+                </div>
             </div>
 
             <!-- 加载中提示 -->
