@@ -94,6 +94,7 @@ pip install -r requirement.txt
 3. **启动后端服务**
 ```bash
 python app.py
+C:\Users\zzw\AppData\Local\Programs\Python\Python38\python.exe D:\Lernen\danmaku_test\danmaku_test\backend\app.py
 ```
 
 4. **访问前端页面**
