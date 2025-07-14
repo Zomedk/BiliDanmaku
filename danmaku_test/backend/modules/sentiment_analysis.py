@@ -100,7 +100,7 @@ def analyze_sentiment(danmaku_list):
         }
 
         # 设置中文字体
-        font_path = r'C:\Users\zzzwww\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'  # Noto Sans SC
+        font_path = r'C:\Users\zzw\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'  # Noto Sans SC
         # font_path = r'C:\Windows\Fonts\simhei.ttf'  # 备选：SimHei
         font = FontProperties(fname=font_path, size=12)
 

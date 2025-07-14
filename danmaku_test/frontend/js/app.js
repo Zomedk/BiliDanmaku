@@ -31,6 +31,7 @@ new Vue({
         showUserDanmakuResult: false,
         lengthDistribution: null,
         colorDistribution: [],
+        danmakuSummary: null,
         tabs: [
             { id: 'video-info', name: '视频信息' },
             { id: 'danmaku', name: '弹幕列表' },
@@ -73,7 +74,7 @@ new Vue({
                 this.isLoading = false;
             });
         },
-        fetchDanmaku() {
+        async fetchDanmaku() {
             if (this.isLoading) return;
             this.isLoading = true;
             console.log("Fetching danmaku for BV:", this.bvInput, "Sort:", this.sortBy, this.sortOrder, "Page:", this.currentPage);

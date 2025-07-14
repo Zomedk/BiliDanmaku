@@ -20,7 +20,7 @@ def get_video_info(bv):
     # 构造 API 请求 URL，使用 bvid 参数获取视频信息
     url = f'https://api.bilibili.com/x/web-interface/view?bvid={bv}'
 
-    # 设置请求头，尤其是 Referer，有助于避免部分反爬机制
+    # 设置请求头避免反爬机制
     headers['Referer'] = f'https://www.bilibili.com/video/{bv}'
     
     try:
@@ -35,7 +35,7 @@ def get_video_info(bv):
             up_name = data['owner']['name']  # UP主昵称
             up_link = f'https://space.bilibili.com/{data["owner"]["mid"]}'  # UP主主页链接
             
-            # 获取视频时长（单位为秒），默认为 0
+            # 获取视频时长单位秒，默认为 0
             video_duration = data.get('duration', 0)
 
             # 检查视频时长是否合法，防止无效或为 0 的情况
@@ -43,14 +43,14 @@ def get_video_info(bv):
                 app_logger.warning(f"Invalid video_duration for BV{bv}: {video_duration}, setting to 60 seconds")
                 video_duration = 60  # 设置默认值 60 秒
 
-            # 如果封面 URL 使用的是 http 协议，替换为 https（更安全）
+            # 如果封面 URL 使用的是 http 协议，替换为 https
             if cover.startswith('http://'):
                 cover = cover.replace('http://', 'https://')
 
             # 打印视频时长（秒）用于调试
             app_logger.debug(f"Video duration (seconds): {video_duration}")
 
-            # 可选：格式化为可读时间格式，例如 "00:03:25"
+            #格式化为可读时间格式
             formatted_duration = time.strftime("%H:%M:%S", time.gmtime(video_duration))
             app_logger.debug(f"Formatted duration: {formatted_duration}")
 
@@ -63,7 +63,6 @@ def get_video_info(bv):
             return title, cover_url, up_name, up_link, video_duration, formatted_duration
 
         else:
-            # 非200响应时抛出异常
             app_logger.error(f"Failed to fetch video info, Status Code: {res.status_code}")
             raise Exception(f"获取视频信息失败，状态码：{res.status_code}")
     
