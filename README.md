@@ -7,7 +7,7 @@
 ![Vue.js](https://img.shields.io/badge/Vue.js-2.6.14-brightgreen.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-**一个强大的B站视频弹幕分析工具，提供弹幕数据抓取、词频统计、情感分析、可视化图表等功能**
+**一个简单基础的的B站视频弹幕分析工具，提供弹幕数据抓取、词频统计、情感分析、可视化图表等功能**
 
 [🚀 快速开始](#快速开始) • [📊 功能特性](#功能特性) • [🔧 安装部署](#安装部署) • [📖 使用指南](#使用指南)
 
