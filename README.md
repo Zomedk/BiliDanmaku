@@ -244,6 +244,5 @@ A: 这是正常现象，因为：
 
 **如果这个项目对你有帮助，请给它一个 ⭐ Star！**
 
-Made with ❤️ by [Your Name]
 
 </div>
