@@ -54,7 +54,7 @@ def fetch_danmaku(cid):
             danmaku_content = d.text if d.text else ''  # 弹幕内容
             
             try:
-                # 将时间戳转换为可读的时间格式：YYYY-MM-DD HH:MM:SS
+                # 将时间戳转换为可读的时间格式
                 send_time = datetime.datetime.fromtimestamp(float(date_timestamp)).strftime('%Y-%m-%d %H:%M:%S')
             except (ValueError, TypeError):
                 app_logger.warning(f"Invalid timestamp: {date_timestamp}, using default")  # 如果时间戳无效，使用默认值

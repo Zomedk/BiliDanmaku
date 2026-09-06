@@ -50,7 +50,7 @@ def calculate_word_frequency(danmaku_data, logger=None, top_n=10):
             logger.debug("Danmaku data is empty or invalid")  # 打印调试日志
         return []
 
-    jieba.setLogLevel(0)  # 设置结巴分词的日志等级，避免打印日志
+    jieba.setLogLevel(0)  # 设置分词的日志等级，避免打印日志
     words = []  # 存储所有分词后的词汇
     for item in danmaku_data:  # 遍历每一条弹幕数据
         try:
@@ -60,7 +60,7 @@ def calculate_word_frequency(danmaku_data, logger=None, top_n=10):
             content = item.get('content', '')  # 获取弹幕内容
             if not content:  # 如果弹幕内容为空，跳过
                 continue
-            seg_list = jieba.cut(content, cut_all=False)  # 进行分词，cut_all=False为精确模式
+            seg_list = jieba.cut(content, cut_all=False)  # 进行分词,精确模式
             # 过滤掉停用词和单个字符的词
             filtered_words = [word for word in seg_list if word not in STOP_WORDS and len(word) > 1]
             words.extend(filtered_words)  # 将过滤后的词添加到词汇列表中
@@ -124,7 +124,7 @@ def generate_word_cloud(danmaku_data, logger=None):
 def generate_danmaku_timeline(danmaku_list, logger=None):
     try:
         # 定义字体路径，使用 Noto Sans SC 支持中文
-        FONT_PATH = r'C:\Users\zzzwww\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'  # 替换为 Noto Sans SC
+        FONT_PATH = r'C:\Users\zzw\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'  # 替换为 Noto Sans SC
         EMOJI_FONT_PATH = r'C:\Windows\Fonts\seguiemj.ttf'  # 表情符号字体
 
         # 检查输入数据是否为列表
@@ -294,17 +294,17 @@ def generate_danmaku_time_proportion(danmaku_list, logger=None):
             startangle=90,
             counterclock=False,
             wedgeprops={'width': 0.4, 'edgecolor': '#ffffff', 'linewidth': 3, 'antialiased': True},
-            textprops={'fontproperties': FontProperties(fname=r'C:\Users\zzzwww\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'), 'fontsize': 14, 'color': '#023e8a'},
+            textprops={'fontproperties': FontProperties(fname=r'C:\Users\zzw\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'), 'fontsize': 14, 'color': '#023e8a'},
             autopct=lambda p: f'{p:.1f}%' if p > 2 else '',
             pctdistance=0.82,
         )
 
         # 8. 美化标签和数字
         for text in texts:
-            text.set_fontproperties(FontProperties(fname=r'C:\Users\zzzwww\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'))
+            text.set_fontproperties(FontProperties(fname=r'C:\Users\zzw\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'))
             text.set_fontsize(14)
         for autotext in autotexts:
-            autotext.set_fontproperties(FontProperties(fname=r'C:\Users\zzzwww\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'))
+            autotext.set_fontproperties(FontProperties(fname=r'C:\Users\zzw\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'))
             autotext.set_fontsize(13)  # 增大字体
             autotext.set_color('#ffffff')
             autotext.set_weight('extra bold')  # 超粗体增强对比
@@ -314,7 +314,7 @@ def generate_danmaku_time_proportion(danmaku_list, logger=None):
         ax.add_artist(centre_circle)
 
         # 10. 设置标题
-        plt.title("弹幕发送时间分布", fontsize=20, fontproperties=FontProperties(fname=r'C:\Users\zzzwww\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'), color='#023e8a', pad=25)
+        plt.title("弹幕发送时间分布", fontsize=20, fontproperties=FontProperties(fname=r'C:\Users\zzw\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'), color='#023e8a', pad=25)
 
         # 11. 调整布局
         plt.subplots_adjust(left=0.15, right=0.85, top=0.85, bottom=0.15)
@@ -343,7 +343,7 @@ def get_danmaku_length_distribution(danmaku_list, logger=None):
         logger.debug(f"Processing {len(danmaku_list)} danmaku entries for length distribution")
 
         # 设置中文字体，与 generate_danmaku_time_proportion 一致
-        font_path = r'C:\Users\zzzwww\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'
+        font_path = r'C:\Users\zzw\AppData\Local\Microsoft\Windows\Fonts\NotoSansSC-Regular.otf'
         font_prop = FontProperties(fname=font_path)
 
         # 统计弹幕长度
@@ -509,6 +509,11 @@ def get_danmaku_summary(danmaku_list, logger=None):
 
         if logger:
             logger.debug(f"Processing {len(danmaku_list)} danmaku entries for summary")
+
+
+        # 限制弹幕条数，防止超出 token 限制
+        max_danmaku = 1000  # 最多处理 500 条弹幕
+        danmaku_list = danmaku_list[:max_danmaku]
 
         # 格式化弹幕数据，使用 'hash' 作为发送者字段
         danmaku_text = ""
