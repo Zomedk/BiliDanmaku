@@ -1,0 +1,24 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local environment files and secrets
+.env
+.env.*
+!.env.example
+
+# Local databases
+*.db
+
+# IDE and editor settings
+.vscode/
+.idea/
+
+# Generated/local output
+danmaku_test/backend/static/danmaku/
+results_*.xlsx
+
+# Local archives
+*.rar
+*.zip
